@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block heading %}
+Login
+{% endblock %}
+
+{% block content %}
+
+{% if message %}
+    <p class="login_message">
+        {{ message }}
+    </p>
+    <br>
+{% endif %}
+
+{% if form %}
+<form action="{{url_for('login')}}" method="POST" style="padding:0px;">
+
+    <div class= "login_container">
+        <!-- Email Field -->
+        {{ form.email.label(class_="login_text") }} <br>
+        {{ form.email(class_="login_field") }} 
+        <br>
+        {% if form.email.errors %}
+            {% for error in form.email.errors %}
+            <b style="color:tomato;"> {{ error }} </b> 
+            <br>
+            {% endfor %}
+        {% endif %}    
+    
+    
+
+        <!-- Password Field -->
+        {{ form.password.label(class_="login_text") }} <br>
+        {{ form.password(class_="login_field") }}
+        <br>
+        {% if form.password.errors %}
+            {% for error in form.password.errors %}
+            <b style="color:tomato;"> {{ error }} </b> 
+            <br>
+            {% endfor %}
+        {% endif %}
+
+        {{ form.csrf_token }}
+        {{ form.submit(class_="login_button") }}
+
+    </div>
+</form> 
+{% endif %}
+{% endblock %}

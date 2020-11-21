@@ -1,0 +1,136 @@
+@import url(https://fonts.googleapis.com/css?family=Walter+Turncoat);
+
+#title {
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+body {
+    font-family: "Walter Turncoat", cursive;
+    /*background: #596E79;*/
+    
+    background-image: url('slate.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+table {
+  width: 100%;
+    text-align: center;
+}
+th, td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+  }
+.slate_nav {
+    float: left;
+}
+
+
+li {
+float: right;
+}
+li a {
+display: block;
+color: white;
+text-align: center;
+padding: 14px 16px;
+text-decoration: none;
+}
+li a:hover {
+background-color: #111;
+} 
+
+.login_container {
+    height: 35%;
+    width:  30%;
+    margin: auto;
+    border-radius: 10px;
+    background-color: #f0ece3;
+    padding: 20px 20px 35px 20px;
+    text-align: center;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.login_field {
+    width: 100%;
+    padding: 10px 0px 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: vertical;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login_text {
+    font-size: 25px;
+}
+
+.login_button {
+    font-family: "Walter Turncoat", cursive;
+    position:relative;
+    top: 10px;
+    background-color: #c7b198; 
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+.login_button:hover {
+    background-color: #ab9a87;
+}
+
+.signup_button {
+    font-family: "Walter Turncoat", cursive;
+    position:relative;
+    top: 20px;
+    background-color: #c7b198; 
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+.signup_button:hover {
+    background-color: #ab9a87;
+}
+
+input {
+   font-size: 20px;
+}
+
+.login_message {
+    text-align: center;
+    color: white;
+    font-weight: normal;
+    font-size: 25px;
+}
+
+.signup_container {
+    height: 35%;
+    width:  30%;
+    margin: auto;
+    border-radius: 10px;
+    background-color: #f0ece3;
+    padding: 20px 20px 35px 20px;
+    text-align: center;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
