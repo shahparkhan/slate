@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, FileField
+from wtforms import StringField, PasswordField, SubmitField, FileField, SelectField
 from wtforms.validators import InputRequired, Email, EqualTo
+
 import email_validator
 
 class SignUpForm(FlaskForm):
@@ -18,5 +19,7 @@ class LoginForm(FlaskForm):
     email = StringField('Email',
                         validators = [InputRequired(), Email()])
     password = PasswordField('Password', validators = [InputRequired()])
+    login_options=("Author","Content Moderator")
+    login_as = SelectField(label="Login As",choices=login_options)
     submit = SubmitField('Login')
 

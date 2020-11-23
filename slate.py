@@ -13,7 +13,7 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'password'
+app.config['MYSQL_PASSWORD'] = 'tigris52'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
@@ -25,9 +25,6 @@ db = MySQL(app)
 
 def generate_author_id(author_name):
     pass
-
-
-
 
 
 @app.route("/about")
@@ -54,12 +51,14 @@ def signup():
             insert_stmt = "INSERT INTO author (Name, Password, Biography, Picture, Email) VALUES (%s,%s,%s,%s,%s)"
             data = (form.full_name.data,form.password.data,form.bio.data,filepath,form.email.data)
             cursor = db.connection.cursor()
+            print("insert_statement",insert_stmt,"data",data)
             cursor.execute(insert_stmt,data)
             db.connection.commit()
         except:
+
             return render_template("signup.html", form = form, message = "Email ID already taken")
 
-        filename = images.save(form.image.data,name=unique_name)
+        _ = images.save(form.image.data,name=unique_name)
 
         return render_template("signup.html", message = "Successfully signed up")
     return render_template("signup.html", form = form)
@@ -68,11 +67,17 @@ def signup():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        exist_stmt = "SELECT EXISTS(SELECT * FROM author WHERE Email = %s)"
+        exist_stmt_auth = "SELECT EXISTS(SELECT * FROM author WHERE Email = %s)"
+        exist_stmt_CM = "SELECT EXISTS(SELECT * FROM content moderator WHERE Email = %s)"
         ''' if not in database, return error '''
         data = (form.email.data)
+        login_as = form.login_as.data
         cursor = db.connection.cursor()
-        cursor.execute(exist_stmt, [form.email.data])
+        if (login_as == "Author"):
+            cursor.execute(exist_stmt_auth, [form.email.data])
+        elif (login_as == "Content Moderator"):
+            cursor.execute(exist_stmt_CM, [form.email.data])
+        
         # RETURNS TUPLE OF TUPLE FOR SOME REASON
         exists = cursor.fetchall()
         exists = int(exists[0][0])
@@ -85,7 +90,10 @@ def login():
         #     return render_template("login.html", form = form, message = "Wrong Credentials. Please Try Again.")
         else:
             user_id = form.email.data
-            statement = "SELECT Name, Password FROM author WHERE Email=%s"
+            if (login_as == "Author"):
+                statement = "SELECT Name, Password FROM author WHERE Email=%s"
+            elif (login_as == "Content Moderator"):
+                statement = "SELECT Name, Password FROM content moderator WHERE Email=%s"
             cursor.execute(statement,[user_id])
             data = cursor.fetchall()
             username = str(data[0][0])
@@ -107,8 +115,3 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug =False,host="0.0.0.0",port=5000)
-
-
-'''
-CHecking shahpar-branch push requests
-'''

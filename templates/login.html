@@ -31,8 +31,6 @@ Login
             <br>
             {% endfor %}
         {% endif %}    
-    
-    
 
         <!-- Password Field -->
         {{ form.password.label(class_="login_text") }} <br>
@@ -44,8 +42,11 @@ Login
             <br>
             {% endfor %}
         {% endif %}
-
+        
+        {{ form.login_as.label }}
+        {{ form.login_as }} 
         {{ form.csrf_token }}
+        
         {{ form.submit(class_="login_button") }}
 
     </div>
