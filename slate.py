@@ -147,7 +147,7 @@ def logout():
         session.pop('pic')
         session.pop('bio')
 
-    return redirect(url_for('homepage', _scheme='https', _external=True))
+    return redirect(url_for('homepage'))
 
 @app.route("/author/<auth_id>")
 def author(auth_id):
