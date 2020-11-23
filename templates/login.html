@@ -44,9 +44,10 @@ Login
         {% endif %}
         
         {{ form.login_as.label }}
-        {{ form.login_as }} 
+        {{ form.login_as }}
+        <br>
+        <p><a href="{{url_for('change_password')}}">Forgot Password?</a></p>
         {{ form.csrf_token }}
-        
         {{ form.submit(class_="login_button") }}
 
     </div>

@@ -23,3 +23,13 @@ class LoginForm(FlaskForm):
     login_as = SelectField(label="Login As:",choices=login_options,validators=[InputRequired()])
     submit = SubmitField('Login')
 
+#changes
+class ChangePassword(FlaskForm):
+    email = StringField('Email',
+                        validators = [InputRequired(), Email()])
+    password = PasswordField('Password', validators = [InputRequired()])
+    confirm_password = PasswordField('Confirm Password',
+                                     validators = [InputRequired(), EqualTo('password')])
+    submit = SubmitField('Reset Password')
+
+
