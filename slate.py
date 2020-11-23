@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from forms import SignUpForm, LoginForm
+from forms import SignUpForm, LoginForm, ChangePassword
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
@@ -13,7 +13,7 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'tigris52'
+app.config['MYSQL_PASSWORD'] = 'password'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
@@ -26,11 +26,9 @@ db = MySQL(app)
 def generate_author_id(author_name):
     pass
 
-
 @app.route("/about")
 def about():
     return render_template("about.html")
-
 
 @app.route("/")
 def homepage():
@@ -42,8 +40,6 @@ def signup():
     form = SignUpForm()
     if form.validate_on_submit():
         '''GENERATE unique filename'''
-
-
         try:
             unique_name = str(uuid.uuid4())+'.jpeg'
             filepath = 'author_data/images/' + unique_name
@@ -107,6 +103,31 @@ def login():
             #have to send author.html the author details that just logged in.
 
     return render_template("login.html", form = form)
+
+@app.route("/change_password", methods=["POST","GET"])
+def change_password():
+    form = ChangePassword()
+    if form.validate_on_submit():
+        exist_stmt_auth = "SELECT EXISTS(SELECT * FROM author WHERE Email=%s)"
+        cursor = db.connection.cursor()
+        cursor.execute(exist_stmt_auth, [form.email.data])
+        exists = cursor.fetchall()
+        exists = int(exists[0][0])
+
+        if not exists:
+            return render_template("change_password.html", form = form, message = "Email not found!")
+        else:
+            print("****************")
+            print("EMAIL =",form.email.data,"PASSWORD =", form.password.data)
+            print("****************")
+            reset_pswd = "UPDATE author SET Password=%s WHERE Email=%s"
+            cursor = db.connection.cursor()
+            cursor.execute(reset_pswd, [form.password.data,form.email.data])
+            db.connection.commit()
+            _ = cursor.fetchall()
+            return render_template("change_password.html", form = form, message = "Password changed successfully!")
+    return render_template("change_password.html", form = form)
+
 
 
 @app.route("/logout")
