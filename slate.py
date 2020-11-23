@@ -68,7 +68,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         exist_stmt_auth = "SELECT EXISTS(SELECT * FROM author WHERE Email = %s)"
-        exist_stmt_CM = "SELECT EXISTS(SELECT * FROM content moderator WHERE Email = %s)"
+        exist_stmt_CM = "SELECT EXISTS(SELECT * FROM `content moderator` WHERE Email = %s)"
         ''' if not in database, return error '''
         data = (form.email.data)
         login_as = form.login_as.data
@@ -93,7 +93,7 @@ def login():
             if (login_as == "Author"):
                 statement = "SELECT Name, Password FROM author WHERE Email=%s"
             elif (login_as == "Content Moderator"):
-                statement = "SELECT Name, Password FROM content moderator WHERE Email=%s"
+                statement = "SELECT Name, Password FROM `content moderator` WHERE Email=%s"
             cursor.execute(statement,[user_id])
             data = cursor.fetchall()
             username = str(data[0][0])
@@ -101,16 +101,30 @@ def login():
 
             if (password != form.password.data):
                 return render_template("login.html", form = form, message = "Incorrect Email or Password")
-
+            #add tuple in session['user'] for author and CM
             session['user'] = username
             return render_template("login.html", message = "Successfully Logged In!")
+            #have to send author.html the author details that just logged in.
+
     return render_template("login.html", form = form)
+
 
 @app.route("/logout")
 def logout():
     if 'user' in session:
         session.pop('user')
     return redirect(url_for('homepage', _scheme='https', _external=True))
+
+@app.route("/author/<name>")
+def author(name):
+    pass
+    #return render_template(author.html, #send author object here)
+
+@app.route("/CM/<name>")
+def CM(name):
+    pass
+
+
 
 
 if __name__ == "__main__":

@@ -29,14 +29,14 @@ ul {
     overflow: hidden;
     background-color: #333;
   }
-.slate_nav {
+.left_nav {
     float: left;
 }
 
-
-li {
-float: right;
+.right_nav {
+    float: right;
 }
+
 li a {
 display: block;
 color: white;

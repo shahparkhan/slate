@@ -20,6 +20,6 @@ class LoginForm(FlaskForm):
                         validators = [InputRequired(), Email()])
     password = PasswordField('Password', validators = [InputRequired()])
     login_options=("Author","Content Moderator")
-    login_as = SelectField(label="Login As",choices=login_options)
+    login_as = SelectField(label="Login As:",choices=login_options,validators=[InputRequired()])
     submit = SubmitField('Login')
 
