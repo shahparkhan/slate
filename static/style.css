@@ -2,7 +2,7 @@
 
 #title {
     text-align: center;
-    color: white;
+    color black;
     font-weight: bold;
 }
 body {
@@ -14,14 +14,16 @@ body {
     background-attachment: fixed;
     background-size: 100% 100%;
 }
-table {
-  width: 100%;
-    text-align: center;
+
+.table_about {
+    width: 100%;
+    text-align: center;  
 }
-th, td {
+.th_td_about {
     padding: 8px;
     border-bottom: 1px solid #ddd;
 }
+
 ul {
     list-style-type: none;
     margin: 0;
@@ -118,7 +120,7 @@ input {
 
 .login_message {
     text-align: center;
-    color: white;
+    color: black;
     font-weight: normal;
     font-size: 25px;
 }
@@ -134,3 +136,12 @@ input {
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
+.author_image {
+    margin: auto 50px;
+    float: right;
+    border-radius: 200px;
+}
+
+.bio_margin {
+    margin-left: 50%;
+}

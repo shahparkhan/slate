@@ -5,26 +5,26 @@
 {% block heading %} About Us {% endblock %}
 
 {% block content %}
-    <table>
+    <table class = "table_about">
         <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Bio</th>
+            <th class = "th_td_about">Image</th>
+            <th class = "th_td_about">Name</th>
+            <th class = "th_td_about">Bio</th>
         </tr>
         <tr>
-            <td><img src= "{{url_for('static', filename= 'shaper.jpeg')}}" height="100" ></td>
-            <td>Shapy</td>
-            <td>I am a tiny kitten rescued by the good people at Paws Rescue Center. I love squeaky toys and cuddles.</td>
+            <td class = "th_td_about"><img src= "{{url_for('static', filename= 'shaper.jpeg')}}" height="100" ></td>
+            <td class = "th_td_about">Shapy</td>
+            <td class = "th_td_about">I am a tiny kitten rescued by the good people at Paws Rescue Center. I love squeaky toys and cuddles.</td>
             </tr>
             <tr>
-            <td><img src= "{{url_for('static', filename= 'ashir.jpeg')}}" height="100" ></td>
-            <td>Ashir</td>
-            <td>I am a handsome gentle-cat. I like to dressup in bow ties.</td>
+            <td class = "th_td_about"><img src= "{{url_for('static', filename= 'ashir.jpeg')}}" height="100" ></td>
+            <td class = "th_td_about">Ashir</td>
+            <td class = "th_td_about">I am a handsome gentle-cat. I like to dressup in bow ties.</td>
             </tr>
             <tr>
-            <td><img src= "{{url_for('static', filename= 'adnan.jpeg')}}" height="100" ></td>
-            <td>Adnan</td>
-            <td>I love barking. But, I love my friends more.</td>
+            <td class = "th_td_about"><img src= "{{url_for('static', filename= 'adnan.jpeg')}}" height="100" ></td>
+            <td class = "th_td_about">Adnan</td>
+            <td class = "th_td_about">I love barking. But, I love my friends more.</td>
             </tr>
         
     </table>
