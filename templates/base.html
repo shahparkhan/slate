@@ -8,14 +8,14 @@
 <body>
     <div>
         <ul>
-            <li class="slate_nav"><a>Slate</a></li>
-            <li><a class="active" href="{{url_for('homepage')}}">Home</a></li>
-            <li><a href="{{url_for('about')}}">About</a></li>
+            <li class="left_nav"><a>Slate</a></li>
+            <li class="left_nav"><a  href="{{url_for('homepage')}}">Home</a></li>
+            <li class="left_nav"><a  href="{{url_for('about')}}">About</a></li>
             {% if 'user' in session %}
-            <li><a href="{{url_for('logout')}}">Log Out</a></li>
+            <li class="right_nav"><a href="{{url_for('logout')}}">Log Out</a></li>
             {% else %}
-            <li><a href="{{url_for('signup')}}">Sign Up</a></li>
-            <li><a href="{{url_for('login')}}">Log In</a></li>
+            <li class="right_nav"><a href="{{url_for('signup')}}">Sign Up</a></li>
+            <li class="right_nav"><a href="{{url_for('login')}}">Log In</a></li>
             {% endif %}
         </ul>    
     </div>
