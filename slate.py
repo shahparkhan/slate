@@ -17,14 +17,12 @@ app.config['MYSQL_PASSWORD'] = 'password'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
-app.config['UPLOADED_IMAGES_DEST'] = 'author_data/images'
+app.config['UPLOADED_IMAGES_DEST'] = 'static/author_data/images'
 images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
 
 db = MySQL(app)
 
-def generate_author_id(author_name):
-    pass
 
 @app.route("/about")
 def about():
@@ -47,7 +45,6 @@ def signup():
             insert_stmt = "INSERT INTO author (Name, Password, Biography, Picture, Email) VALUES (%s,%s,%s,%s,%s)"
             data = (form.full_name.data,form.password.data,form.bio.data,filepath,form.email.data)
             cursor = db.connection.cursor()
-            print("insert_statement",insert_stmt,"data",data)
             cursor.execute(insert_stmt,data)
             db.connection.commit()
         except:
@@ -87,18 +84,30 @@ def login():
         else:
             user_id = form.email.data
             if (login_as == "Author"):
-                statement = "SELECT Name, Password FROM author WHERE Email=%s"
+                statement = "SELECT Name, Password, Auth_ID, Biography, Picture FROM author WHERE Email=%s"
             elif (login_as == "Content Moderator"):
-                statement = "SELECT Name, Password FROM `content moderator` WHERE Email=%s"
+                statement = "SELECT Name, Password, CM_ID, Biography, Picture FROM `content moderator` WHERE Email=%s"
             cursor.execute(statement,[user_id])
             data = cursor.fetchall()
             username = str(data[0][0])
             password = str(data[0][1])
+            user_id = str(data[0][2])
+            bio = str(data[0][3])
+            pic = str(data[0][4])
+
+
 
             if (password != form.password.data):
                 return render_template("login.html", form = form, message = "Incorrect Email or Password")
             #add tuple in session['user'] for author and CM
             session['user'] = username
+            session['user_id'] = user_id
+            session['pic'] = pic
+            session['bio'] = bio
+            if (login_as == "Author"):
+                session['login_as'] = "Author"
+            elif ( login_as == "Content Moderator" ):
+                session['login_as'] = "Content Moderator"
             return render_template("login.html", message = "Successfully Logged In!")
             #have to send author.html the author details that just logged in.
 
@@ -134,16 +143,26 @@ def change_password():
 def logout():
     if 'user' in session:
         session.pop('user')
+        session.pop('user_id')
+        session.pop('pic')
+        session.pop('bio')
+
     return redirect(url_for('homepage', _scheme='https', _external=True))
 
-@app.route("/author/<name>")
-def author(name):
-    pass
-    #return render_template(author.html, #send author object here)
+@app.route("/author/<auth_id>")
+def author(auth_id):
+    name1 = session['user']
+    pic_path = session['pic']
+    bio1 = session['bio']
+    return render_template("author.html",name=name1,pic=pic_path,bio=bio1) #send author object here)
 
-@app.route("/CM/<name>")
-def CM(name):
-    pass
+@app.route("/cm/<cm_id>")
+def cm(cm_id):
+    name1 = session['user']
+    pic_path = session['pic']
+    bio1 = session['bio']
+    return render_template("cm.html",name=name1,pic=pic_path,bio=bio1) #send content moderator object here)
+
 
 
 
