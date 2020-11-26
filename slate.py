@@ -1,8 +1,9 @@
 from flask import Flask, render_template
-from forms import SignUpForm, LoginForm, ChangePassword
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
+import datetime
 from flask import session, redirect, url_for
 #from pymysql.cursors import DictCursor
 
@@ -13,13 +14,19 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'password'
+app.config['MYSQL_PASSWORD'] = 'tigris52'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
 app.config['UPLOADED_IMAGES_DEST'] = 'static/author_data/images'
+#app.config['UPLOADED_BLOGS_DEST'] = 'static/author_data/blogs'
+
+
 images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
+
+# blogs = UploadSet('blogs',DOCUMENTS)
+# configure_uploads(app, blogs)
 
 db = MySQL(app)
 
@@ -163,6 +170,21 @@ def cm(cm_id):
     bio1 = session['bio']
     return render_template("cm.html",name=name1,pic=pic_path,bio=bio1) #send content moderator object here)
 
+@app.route("/create/<auth_id>",methods=["POST","GET"])
+def create(auth_id):
+    form = CreateStory()
+    if form.validate_on_submit():
+        timestamp=datetime.datetime.now()
+        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
+        #blog_name = str(form.title.data)+'.docx'
+        #filepath = 'author_data/blogs/' + blog_name
+        flag_id=1 # have to query database for flag id
+        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data)
+        cursor = db.connection.cursor()
+        cursor.execute(insert_stmt,data)
+        db.connection.commit()
+        return render_template("create_blog.html", message = "Succesfully submitted!")
+    return render_template("create_blog.html",form=form)
 
 
 

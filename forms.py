@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, FileField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, FileField, SelectField, TextField, TextAreaField, DateTimeField
 from wtforms.validators import InputRequired, Email, EqualTo
-
+import datetime 
 import email_validator
 
 class SignUpForm(FlaskForm):
@@ -31,5 +31,12 @@ class ChangePassword(FlaskForm):
     confirm_password = PasswordField('Confirm Password',
                                      validators = [InputRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
+
+class CreateStory(FlaskForm):
+    title = StringField('Title',validators = [InputRequired()])
+    content = TextAreaField('Content',validators = [InputRequired()])
+    themes = ("Tech","Finance","Fiction")
+    theme = SelectField(label="Theme: ",choices = themes,validators = [InputRequired()])
+    submit = SubmitField('Create New Story!')
 
 
