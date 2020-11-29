@@ -1,0 +1,5 @@
+1	No-Flag
+2	Explicit
+3	Trigger-Warning
+4	Gore
+5	18+
