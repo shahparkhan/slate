@@ -175,16 +175,67 @@ def logout():
 
 @app.route("/author/<auth_id>")
 def author(auth_id):
-    name1 = session['user']
-    pic_path = session['pic']
-    bio1 = session['bio']
-    return render_template("author.html",name=name1,pic=pic_path,bio=bio1) #send author object here)
+	name1 = session['user']
+	pic_path = session['pic']
+	bio1 = session['bio']
+
+	cursor = db.connection.cursor()
+	select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID=%s"
+	auth_id = int(auth_id)
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [auth_id])
+	data = cursor.fetchall()
+	print(data)
+
+	headings = []
+
+	for i in data:
+		temp = [i[0], i[1]]
+		headings.append(temp)
+
+	return render_template("author.html", pic = pic_path, headings = headings)
 
 #need to make this
 @app.route("/blog/<blog_id>")
 def blog_display(blog_id):
 	cursor = db.connection.cursor()
-	select_stmt = "SELECT Name, Password, Auth_ID, Biography, Picture FROM blogs WHERE Email=%s"
+	select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
+	blog_id = int(blog_id)
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [blog_id])
+	data = cursor.fetchall()
+	print(data)
+	heading = data[0][0]
+	time_published = data[0][1].strftime("%d-%b-%Y (%H:%M:%S)")
+	theme = data[0][2]
+	flag_id = data[0][3]
+	auth_id = data[0][4]
+	content = data[0][5]
+	
+
+
+	select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
+	auth_id = int(auth_id)
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [auth_id])
+	data = cursor.fetchall()
+
+	print(data)
+
+	auth_name = data[0][0]
+
+	select_stmt = "SELECT Flag FROM flags WHERE Flag_ID=%s"
+	auth_id = int(flag_id)
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [flag_id])
+	data = cursor.fetchall()
+
+	flag_name = data[0][0]
+
+	return render_template("blog.html", heading = heading, time_published = time_published, theme = theme, author = auth_name, flag = flag_name, content = content)
+
+
+	return "done"
 
 @app.route("/cm/<cm_id>")
 def cm(cm_id):
