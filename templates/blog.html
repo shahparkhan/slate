@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block heading %}
+	{{ heading }}
+{% endblock %}
+
+{% block content %}
+<div>
+
+	<table class = "table_about">
+        <tr>
+            <th class = "th_td_content">Published At</th>
+            <th class = "th_td_content">Theme</th>
+            <th class = "th_td_content">Author</th>
+            <th class = "th_td_content">Flag</th>
+        </tr>
+        <tr>
+            <td class = "th_td_content">{{ time_published }}</td>
+            <td class = "th_td_content">{{ theme }}</td>
+            <td class = "th_td_content">{{ author }}</td>
+            <td class = "th_td_content">{{ flag }}</td>
+    </table>
+
+</div>
+
+<br><br>
+
+<div class = "blog_content">
+	{{ content }}
+</div>
+
+    
+{% endblock %}

@@ -21,5 +21,19 @@ Author
     <a href="{{url_for('create',auth_id = session['user_id'])}}">Create New Story</a>
 </div>
 
+
+<br><br>
+
+<div>
+	<h1> Blogs </h1>
+
+	<br><br>
+
+	<ol>
+		{% for item in headings %}
+		    <a href= "{{url_for('blog_display', blog_id = item[1])}}"><li>{{ item[0] }}</li></a>
+		{% endfor %}
+	</ol>
+</div>
     
 {% endblock %}
