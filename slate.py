@@ -1,3 +1,5 @@
+
+
 from flask import Flask, render_template
 from forms import SignUpForm, LoginForm, ChangePassword, CreateStory
 from flask_mysqldb import MySQL
@@ -14,7 +16,7 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'tigris52'
+app.config['MYSQL_PASSWORD'] = 'password'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
@@ -30,6 +32,20 @@ configure_uploads(app, images)
 
 db = MySQL(app)
 
+def update_flags():
+	cursor = db.connection.cursor()
+	select_stmt = "SELECT * FROM flags"
+	cursor.execute(select_stmt)
+	themes = cursor.fetchall()
+	print(themes)
+	
+	with open("themes.txt", 'w') as f:	
+		for theme in themes:
+			write_this = str(theme[0]) + "\t" +  str(theme[1]) + "\n"
+			f.write(write_this)
+
+
+
 
 @app.route("/about")
 def about():
@@ -37,7 +53,8 @@ def about():
 
 @app.route("/")
 def homepage():
-    return render_template("home.html")
+	update_flags()
+	return render_template("home.html")
 
 @app.route("/signup", methods=["POST", "GET"])
 def signup():
@@ -163,6 +180,12 @@ def author(auth_id):
     bio1 = session['bio']
     return render_template("author.html",name=name1,pic=pic_path,bio=bio1) #send author object here)
 
+#need to make this
+@app.route("/blog/<blog_id>")
+def blog_display(blog_id):
+	cursor = db.connection.cursor()
+	select_stmt = "SELECT Name, Password, Auth_ID, Biography, Picture FROM blogs WHERE Email=%s"
+
 @app.route("/cm/<cm_id>")
 def cm(cm_id):
     name1 = session['user']
@@ -172,22 +195,26 @@ def cm(cm_id):
 
 @app.route("/create/<auth_id>",methods=["POST","GET"])
 def create(auth_id):
-    form = CreateStory()
-    if form.validate_on_submit():
-        timestamp=datetime.datetime.now()
-        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
-        #blog_name = str(form.title.data)+'.docx'
-        #filepath = 'author_data/blogs/' + blog_name
-        flag_id=1 # have to query database for flag id
-        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data)
-        cursor = db.connection.cursor()
-        cursor.execute(insert_stmt,data)
-        db.connection.commit()
-        return render_template("create_blog.html", message = "Succesfully submitted!")
-    return render_template("create_blog.html",form=form)
+	
+	cursor = db.connection.cursor()
+
+	form = CreateStory()
+	if form.validate_on_submit():	
+	    timestamp=datetime.datetime.now()
+	    insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
+	    #blog_name = str(form.title.data)+'.docx'
+	    #filepath = 'author_data/blogs/' + blog_name
+	    # have to query database for flag id
+	    flag_id = 1
+	    data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data)
+	    
+	    cursor.execute(insert_stmt,data)
+	    db.connection.commit()
+	    return render_template("create_blog.html", message = "Succesfully submitted!")
+	return render_template("create_blog.html",form=form)
 
 
 
 
 if __name__ == "__main__":
-    app.run(debug =False,host="0.0.0.0",port=5000)
+	app.run(debug =False,host="0.0.0.0",port=5000)

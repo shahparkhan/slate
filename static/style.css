@@ -61,6 +61,19 @@ background-color: #111;
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
+.content_field {
+    height: 400px;
+    width: 100%;
+    font-size: 20px;
+    padding: 10px 0px 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: vertical;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
 .login_field {
     width: 100%;
     padding: 10px 0px 10px 12px;

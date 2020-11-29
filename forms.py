@@ -32,11 +32,13 @@ class ChangePassword(FlaskForm):
                                      validators = [InputRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
 
+
 class CreateStory(FlaskForm):
-    title = StringField('Title',validators = [InputRequired()])
-    content = TextAreaField('Content',validators = [InputRequired()])
-    themes = ("Tech","Finance","Fiction")
-    theme = SelectField(label="Theme: ",choices = themes,validators = [InputRequired()])
-    submit = SubmitField('Create New Story!')
+    themes = ("Wholesome", "Tech", "Humour", "Mystic", "Sci-Fi", "Entertainment", "Food", "Sport", "Religious", "Random")
+    title = StringField(label='Title',validators = [InputRequired()])
+    content = TextAreaField(label='Content',validators = [InputRequired()])
+    theme = SelectField(label="Theme: ", choices =themes, validators = [InputRequired()])
+    submit = SubmitField(label='Create New Story!')
+        
 
 
