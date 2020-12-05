@@ -1,12 +1,11 @@
-
-
-from flask import Flask, render_template
-from forms import SignUpForm, LoginForm, ChangePassword, CreateStory
+from flask import Flask, render_template, request
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
 import datetime
 from flask import session, redirect, url_for
+import os
 #from pymysql.cursors import DictCursor
 
 app = Flask(__name__)
@@ -33,19 +32,16 @@ configure_uploads(app, images)
 db = MySQL(app)
 
 def update_flags():
-	cursor = db.connection.cursor()
-	select_stmt = "SELECT * FROM flags"
-	cursor.execute(select_stmt)
-	themes = cursor.fetchall()
-	print(themes)
-	
-	with open("themes.txt", 'w') as f:	
-		for theme in themes:
-			write_this = str(theme[0]) + "\t" +  str(theme[1]) + "\n"
-			f.write(write_this)
-
-
-
+    cursor = db.connection.cursor()
+    select_stmt = "SELECT * FROM flags"
+    cursor.execute(select_stmt)
+    themes = cursor.fetchall()
+    print(themes)
+    
+    with open("themes.txt", 'w') as f:	
+        for theme in themes:
+            write_this = str(theme[0]) + "\t" +  str(theme[1]) + "\n"
+            f.write(write_this)
 
 @app.route("/about")
 def about():
@@ -53,8 +49,8 @@ def about():
 
 @app.route("/")
 def homepage():
-	update_flags()
-	return render_template("home.html")
+    update_flags()
+    return render_template("home.html")
 
 @app.route("/signup", methods=["POST", "GET"])
 def signup():
@@ -119,8 +115,6 @@ def login():
             bio = str(data[0][3])
             pic = str(data[0][4])
 
-
-
             if (password != form.password.data):
                 return render_template("login.html", form = form, message = "Incorrect Email or Password")
             #add tuple in session['user'] for author and CM
@@ -162,7 +156,6 @@ def change_password():
     return render_template("change_password.html", form = form)
 
 
-
 @app.route("/logout")
 def logout():
     if 'user' in session:
@@ -175,67 +168,69 @@ def logout():
 
 @app.route("/author/<auth_id>")
 def author(auth_id):
-	name1 = session['user']
-	pic_path = session['pic']
-	bio1 = session['bio']
+    name1 = session['user']
+    pic_path = session['pic']
+    bio1 = session['bio']
 
-	cursor = db.connection.cursor()
-	select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID=%s"
-	auth_id = int(auth_id)
-	cursor = db.connection.cursor()
-	cursor.execute(select_stmt, [auth_id])
-	data = cursor.fetchall()
-	print(data)
+    cursor = db.connection.cursor()
+    select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID=%s"
+    auth_id = int(auth_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [auth_id])
+    data = cursor.fetchall()
+    print(data)
 
-	headings = []
+    headings = []
 
-	for i in data:
-		temp = [i[0], i[1]]
-		headings.append(temp)
+    for i in data:
+        temp = [i[0], i[1]]
+        headings.append(temp)
 
-	return render_template("author.html", pic = pic_path, headings = headings)
+    return render_template("Author.html", pic = pic_path, headings = headings)
 
 #need to make this
 @app.route("/blog/<blog_id>")
 def blog_display(blog_id):
-	cursor = db.connection.cursor()
-	select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
-	blog_id = int(blog_id)
-	cursor = db.connection.cursor()
-	cursor.execute(select_stmt, [blog_id])
-	data = cursor.fetchall()
-	print(data)
-	heading = data[0][0]
-	time_published = data[0][1].strftime("%d-%b-%Y (%H:%M:%S)")
-	theme = data[0][2]
-	flag_id = data[0][3]
-	auth_id = data[0][4]
-	content = data[0][5]
-	
+    cursor = db.connection.cursor()
+    select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
+    blog_id = int(blog_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [blog_id])
+    data = cursor.fetchall()
+    print(data)
+    heading = data[0][0]
+    time_published = data[0][1].strftime("%d-%b-%Y (%H:%M:%S)")
+    theme = data[0][2]
+    flag_id = data[0][3]
+    auth_id = data[0][4]
+    content = data[0][5]
 
+    select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
+    auth_id = int(auth_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [auth_id])
+    data = cursor.fetchall()
 
-	select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
-	auth_id = int(auth_id)
-	cursor = db.connection.cursor()
-	cursor.execute(select_stmt, [auth_id])
-	data = cursor.fetchall()
+    print(data)
 
-	print(data)
+    auth_name = data[0][0]
 
-	auth_name = data[0][0]
+    select_stmt = "SELECT Flag FROM flags WHERE Flag_ID=%s"
+    auth_id = int(flag_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [flag_id])
+    data = cursor.fetchall()
 
-	select_stmt = "SELECT Flag FROM flags WHERE Flag_ID=%s"
-	auth_id = int(flag_id)
-	cursor = db.connection.cursor()
-	cursor.execute(select_stmt, [flag_id])
-	data = cursor.fetchall()
+    flag_name = data[0][0]
 
-	flag_name = data[0][0]
+    return render_template("blog.html", 
+                        heading = heading, 
+                        time_published = time_published, 
+                        theme = theme, 
+                        author = auth_name, 
+                        flag = flag_name, 
+                        content = content)
 
-	return render_template("blog.html", heading = heading, time_published = time_published, theme = theme, author = auth_name, flag = flag_name, content = content)
-
-
-	return "done"
 
 @app.route("/cm/<cm_id>")
 def cm(cm_id):
@@ -244,28 +239,48 @@ def cm(cm_id):
     bio1 = session['bio']
     return render_template("cm.html",name=name1,pic=pic_path,bio=bio1) #send content moderator object here)
 
+@app.route("/upload_blog/<auth_id>", methods=['POST', 'GET'])
+def upload_blog(auth_id):
+    cursor = db.connection.cursor()
+    form = UploadStory()
+    if form.validate_on_submit():
+        timestamp=datetime.datetime.now()
+        f = request.files['doc']
+        name = str(timestamp)+'_'+f.filename
+        APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+        f.save(os.path.join(APP_ROOT,name))
+        fin = open(name)
+        filedata = fin.readlines()
+        filedata = '\n'.join(filedata)
+        fin.close()
+        os.remove(name)
+
+        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
+        flag_id = 1
+        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,filedata)
+        cursor.execute(insert_stmt,data)
+        db.connection.commit()
+        return render_template("upload_blog.html", message="Success!")
+    return render_template("upload_blog.html", form=form)
+
+
 @app.route("/create/<auth_id>",methods=["POST","GET"])
 def create(auth_id):
-	
-	cursor = db.connection.cursor()
-
-	form = CreateStory()
-	if form.validate_on_submit():	
-	    timestamp=datetime.datetime.now()
-	    insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
-	    #blog_name = str(form.title.data)+'.docx'
-	    #filepath = 'author_data/blogs/' + blog_name
-	    # have to query database for flag id
-	    flag_id = 1
-	    data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data)
-	    
-	    cursor.execute(insert_stmt,data)
-	    db.connection.commit()
-	    return render_template("create_blog.html", message = "Succesfully submitted!")
-	return render_template("create_blog.html",form=form)
-
-
+    cursor = db.connection.cursor()
+    form = CreateStory()
+    if form.validate_on_submit():
+        timestamp=datetime.datetime.now()
+        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
+        #blog_name = str(form.title.data)+'.docx'
+        #filepath = 'author_data/blogs/' + blog_name
+        # have to query database for flag id
+        flag_id = 1
+        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data)
+        cursor.execute(insert_stmt,data)
+        db.connection.commit()
+        return render_template("create_blog.html", message = "Succesfully submitted!")
+    return render_template("create_blog.html",form=form)
 
 
 if __name__ == "__main__":
-	app.run(debug =False,host="0.0.0.0",port=5000)
+    app.run(debug =False,host="0.0.0.0",port=5000)

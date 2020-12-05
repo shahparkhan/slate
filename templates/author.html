@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}
+Author
+{% endblock %}
+
+{% block heading %}
+    {{ session['user'] }}
+{% endblock %}
+
+{% block content %}
+<div>
+    <img class = "author_image" src= "{{url_for('static',filename= pic)}}" height="300", width="300" >
+</div>
+<div>
+    <h1>Biography</h1>
+    <br>
+    <h3> {{ session['bio'] }} </h3>
+    
+</div>
+
+    
+{% endblock %}
