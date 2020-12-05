@@ -34,11 +34,18 @@ class ChangePassword(FlaskForm):
 
 
 class CreateStory(FlaskForm):
-    themes = ("Wholesome", "Tech", "Humour", "Mystic", "Sci-Fi", "Entertainment", "Food", "Sport", "Religious", "Random")
+    themes = ("-","Wholesome", "Tech", "Humour", "Mystic", "Sci-Fi", "Entertainment", "Food", "Sport", "Religious", "Random")
     title = StringField(label='Title',validators = [InputRequired()])
     content = TextAreaField(label='Content',validators = [InputRequired()])
     theme = SelectField(label="Theme: ", choices =themes, validators = [InputRequired()])
     submit = SubmitField(label='Create New Story!')
+
+class UploadStory(FlaskForm):
+    doc = FileField('Text', validators = [InputRequired()])
+    themes = ("-","Wholesome", "Tech", "Humour", "Mystic", "Sci-Fi", "Entertainment", "Food", "Sport", "Religious", "Random")
+    title = StringField(label='Title',validators = [InputRequired()])
+    theme = SelectField(label="Theme: ", choices =themes, validators = [InputRequired()])
+    submit = SubmitField(label='Upload New Story!')
         
 
 
