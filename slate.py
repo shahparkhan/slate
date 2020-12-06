@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
@@ -168,13 +168,20 @@ def logout():
 
 @app.route("/author/<auth_id>")
 def author(auth_id):
-    name1 = session['user']
-    pic_path = session['pic']
-    bio1 = session['bio']
-
+    
     cursor = db.connection.cursor()
-    select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID=%s"
+
+    select_stmt = "SELECT Name, Picture, Biography FROM author WHERE Auth_ID=%s"
     auth_id = int(auth_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [auth_id])
+    data = cursor.fetchall()
+
+    name = data[0][0]
+    pic_path = data[0][1]
+    bio = data[0][2]
+
+    select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID=%s"
     cursor = db.connection.cursor()
     cursor.execute(select_stmt, [auth_id])
     data = cursor.fetchall()
@@ -186,50 +193,84 @@ def author(auth_id):
         temp = [i[0], i[1]]
         headings.append(temp)
 
-    return render_template("Author.html", pic = pic_path, headings = headings)
+    auth_id = str(auth_id)
+    return render_template("author.html", name = name, bio = bio, pic = pic_path, auth_id = auth_id, headings = headings)
 
 #need to make this
-@app.route("/blog/<blog_id>")
+@app.route("/blog/<blog_id>", methods=["POST","GET"])
 def blog_display(blog_id):
-    cursor = db.connection.cursor()
-    select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
-    blog_id = int(blog_id)
-    cursor = db.connection.cursor()
-    cursor.execute(select_stmt, [blog_id])
-    data = cursor.fetchall()
-    print(data)
-    heading = data[0][0]
-    time_published = data[0][1].strftime("%d-%b-%Y (%H:%M:%S)")
-    theme = data[0][2]
-    flag_id = data[0][3]
-    auth_id = data[0][4]
-    content = data[0][5]
 
-    select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
-    auth_id = int(auth_id)
-    cursor = db.connection.cursor()
-    cursor.execute(select_stmt, [auth_id])
-    data = cursor.fetchall()
+	form = Comment()
+	cursor = db.connection.cursor()
+	blog_id = int(blog_id)
 
-    print(data)
+	if form.validate_on_submit():
+		time = datetime.datetime.now()
+		insert_stmt = "INSERT INTO comments (Blog_ID, Auth_ID, Comment, Time_Posted, Author) VALUES (%s,%s,%s,%s,%s)"
+		data = (blog_id,session['user_id'],form.comment.data, time, session['user'])
+		cursor = db.connection.cursor()
+		cursor.execute(insert_stmt,data)
+		db.connection.commit()
 
-    auth_name = data[0][0]
+	select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [blog_id])
+	data = cursor.fetchall()
+	print(data)
+	heading = data[0][0]
+	time_published = data[0][1].strftime("%d-%b-%Y (%H:%M:%S)")
+	theme = data[0][2]
+	flag_id = data[0][3]
+	auth_id = data[0][4]
+	content = data[0][5]
 
-    select_stmt = "SELECT Flag FROM flags WHERE Flag_ID=%s"
-    auth_id = int(flag_id)
-    cursor = db.connection.cursor()
-    cursor.execute(select_stmt, [flag_id])
-    data = cursor.fetchall()
+	select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
+	auth_id = int(auth_id)
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [auth_id])
+	data = cursor.fetchall()
 
-    flag_name = data[0][0]
+	print(data)
 
-    return render_template("blog.html", 
-                        heading = heading, 
-                        time_published = time_published, 
-                        theme = theme, 
-                        author = auth_name, 
-                        flag = flag_name, 
-                        content = content)
+	auth_name = data[0][0]
+
+	select_stmt = "SELECT Flag FROM flags WHERE Flag_ID=%s"
+	auth_id = int(flag_id)
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [flag_id])
+	data = cursor.fetchall()
+
+	flag_name = data[0][0]
+
+	select_stmt = "SELECT Comment, Author, Time_Posted, Auth_ID FROM comments WHERE Blog_ID=%s"
+	cursor = db.connection.cursor()
+	cursor.execute(select_stmt, [blog_id])
+	data = cursor.fetchall()
+	temp_comments = list(data)
+	comments = []
+
+	for comment in temp_comments:
+		print("1", comment)
+		temp_list = list(comment)
+		temp_list[2] = temp_list[2].strftime("%d-%b-%Y (%H:%M:%S)")
+		temp_tuple = tuple(temp_list)
+		comments.append(temp_tuple)
+		print("list", comments)
+
+	comments = tuple(comments)
+
+	print("final", comments)
+
+	return render_template("blog.html", 
+	                    heading = heading, 
+	                    time_published = time_published, 
+	                    theme = theme, 
+	                    author = auth_name, 
+	                    flag = flag_name, 
+	                    content = content,
+	                    form = form,
+	                    comments = comments,
+	                    blog_id = blog_id)
 
 
 @app.route("/cm/<cm_id>")
@@ -246,9 +287,9 @@ def upload_blog(auth_id):
     if form.validate_on_submit():
         timestamp=datetime.datetime.now()
         f = request.files['doc']
-        name = str(timestamp)+'_'+f.filename
+        name = f.filename
         APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-        f.save(os.path.join(APP_ROOT,name))
+        f.save(name)
         fin = open(name)
         filedata = fin.readlines()
         filedata = '\n'.join(filedata)

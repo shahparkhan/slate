@@ -48,4 +48,6 @@ class UploadStory(FlaskForm):
     submit = SubmitField(label='Upload New Story!')
         
 
-
+class Comment(FlaskForm):
+	comment = StringField(label='Comment',validators = [InputRequired()])
+	submit = SubmitField(label='Post Comment')
