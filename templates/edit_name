@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}
+Edit profile
+{% endblock %}
+
+{% block heading %}
+{{ session['user'] }}
+{% endblock %}
+
+{% block content %}
+
+{% endblock %}
