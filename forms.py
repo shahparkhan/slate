@@ -70,4 +70,6 @@ class EditPic(FlaskForm):
     image = FileField('Image', validators = [InputRequired()])
     submit = SubmitField(label='submit')
 
-
+class Comment(FlaskForm):
+	comment = StringField(label='Comment',validators = [InputRequired()])
+	submit = SubmitField(label='Post Comment')
