@@ -8,6 +8,9 @@ Author
 {% endblock %}
 
 {% block content %}
+{% if 'You are now following this author!'== message %}
+	{{ message }}
+{% else %}
 <div>
     <img class = "author_image" src= "{{url_for('static', filename= pic)}}" height="300", width="300" >
 </div>
@@ -16,6 +19,17 @@ Author
     <br>
     <h3>{{ bio }}</h3>
 </div>
+<br>
+{% if auth_id != session['user_id'] %}
+	{% if 'Followed' == message %}
+		<div class = "signup_button"> Following </div>
+	{% else %}
+		<div class = "signup_button">
+			<a href="{{url_for('follow',follower = session['user_id'] , following = auth_id )}}">Follow</a>
+		</div>
+	{% endif %}
+{% endif %}
+
 
 {% if 'user' in session %}
 	{% if session['user_id'] == auth_id %}
@@ -27,14 +41,7 @@ Author
 		<div class="signup_button">
 			<a href="{{url_for('upload_blog',auth_id = session['user_id'])}}">Upload New Story</a>
 		</div>
-     
-    <div class="signup_button">
-	    <a href="{{url_for('edit_profile',auth_id = session['user_id'])}}">Edit profile</a>
-    </div>
 
-    <div class = "signup_button">
-	    <a href="{{url_for('delete_auth',auth_id = session['user_id'])}}">Delete profile</a>
-    </div>
 	{% endif %}
 {% endif %}
 
@@ -43,12 +50,16 @@ Author
 <div>
 	<h1> Blogs </h1>
 
+	<br><br>
+
 	<ol>
 		{% for item in headings %}
-			<a href= "{{url_for('blog_display', blog_id = item[1])}}"><li>{{ item[0] }}</li></a>
-			<a href="{{url_for('delete_blog', blog_id = item[1])}}">Delete Blog </a>
+		    <a href= "{{url_for('blog_display', blog_id = item[1], update = 1 )}}"><li>{{ item[0] }}</li></a>
 		{% endfor %}
 	</ol>
 </div>
-    
+
+{% endif %}
 {% endblock %}
+
+<br>
