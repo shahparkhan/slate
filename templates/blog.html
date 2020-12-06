@@ -1,12 +1,23 @@
 {% extends "base.html" %}
+
+    
+
 {% block title %}
+{{ heading }}
 {% endblock %}
 
 {% block heading %}
 	{{ heading }}
 {% endblock %}
 
+
+
+
 {% block content %}
+<!-- <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head> -->
+
 <div>
 
 	<table class = "table_about">
@@ -15,17 +26,32 @@
             <th class = "th_td_content">Theme</th>
             <th class = "th_td_content">Author</th>
             <th class = "th_td_content">Flag</th>
+            <th class = "th_td_content">Views</th>
+            <th class = "th_td_content">Applauds</th>
         </tr>
         <tr>
             <td class = "th_td_content">{{ time_published }}</td>
             <td class = "th_td_content">{{ theme }}</td>
-            <td class = "th_td_content">{{ author }}</td>
+            <td class = "th_td_content"><a href="{{url_for('author', auth_id = auth_id )}}">{{ author }}</a></td>
             <td class = "th_td_content">{{ flag }}</td>
+            <td class = "th_td_content">{{ views }}</td>
+            <td class = "th_td_content">{{ applauds }}</td>
     </table>
 
 </div>
 
-<br><br>
+<div>
+    <h4><a href="{{url_for('report',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
+        src="{{url_for('static', filename= 'report.ico')}}"></a> Report</h4>
+</div>
+
+<div>
+    <h4><a href="{{url_for('applaud',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
+        src="{{url_for('static', filename= 'clapping.ico')}}"></a> Applaud! </h4>
+</div>
+
+
+<br>
 
 <div class = "blog_content">
 	{{ content }}
