@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}
+Edit Name
+{% endblock %}
+
+{% block heading %}
+{{ session['user'] }}
+{% endblock %}
+
+{% if message %}
+<h2 style="color:rgb(255, 0, 0); text-align: center;">
+    {{ message }}</h2>
+{% endif %}
+
+{% block content %}
+{% if form %}
+<form action="{{url_for('edit_pic',auth_id = session['user_id'])}}" enctype="multipart/form-data" method="POST"
+    style="padding:5px;">
+    <!-- <div class="signup_container"></div> -->
+    <!-- Image Field -->
+    {{ form.image.label(class_="login_text") }} <br>
+    {{ form.image }}
+    <br>
+    {% if form.image.errors %}
+        {% for error in form.image.errors %}
+        <b style="color:tomato;"> {{ error }} </b>
+        <br>
+        {% endfor %}
+    {% endif %}
+    
+    {{ form.csrf_token }}
+    {{ form.submit(class_="signup_button") }}
+    <!-- </div> -->
+</form>
+{% endif %}
+{% endblock %}

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, EditName, EditEmail, EditBio, EditPic, EditPassword
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
@@ -36,7 +36,6 @@ def update_flags():
     select_stmt = "SELECT * FROM flags"
     cursor.execute(select_stmt)
     themes = cursor.fetchall()
-    print(themes)
     
     with open("themes.txt", 'w') as f:	
         for theme in themes:
@@ -68,11 +67,8 @@ def signup():
             cursor.execute(insert_stmt,data)
             db.connection.commit()
         except:
-
             return render_template("signup.html", form = form, message = "Email ID already taken")
-
         _ = images.save(form.image.data,name=unique_name)
-
         return render_template("signup.html", message = "Successfully signed up")
     return render_template("signup.html", form = form)
 
@@ -144,9 +140,6 @@ def change_password():
         if not exists:
             return render_template("change_password.html", form = form, message = "Email not found!")
         else:
-            print("****************")
-            print("EMAIL =",form.email.data,"PASSWORD =", form.password.data)
-            print("****************")
             reset_pswd = "UPDATE author SET Password=%s WHERE Email=%s"
             cursor = db.connection.cursor()
             cursor.execute(reset_pswd, [form.password.data,form.email.data])
@@ -168,7 +161,6 @@ def logout():
 
 @app.route("/author/<auth_id>")
 def author(auth_id):
-    
     cursor = db.connection.cursor()
 
     select_stmt = "SELECT Name, Picture, Biography FROM author WHERE Auth_ID=%s"
@@ -185,7 +177,6 @@ def author(auth_id):
     cursor = db.connection.cursor()
     cursor.execute(select_stmt, [auth_id])
     data = cursor.fetchall()
-    print(data)
 
     headings = []
 
@@ -193,12 +184,41 @@ def author(auth_id):
         temp = [i[0], i[1]]
         headings.append(temp)
 
+
     auth_id = str(auth_id)
     return render_template("author.html", name = name, bio = bio, pic = pic_path, auth_id = auth_id, headings = headings)
 
 #need to make this
 @app.route("/blog/<blog_id>", methods=["POST","GET"])
 def blog_display(blog_id):
+
+    cursor = db.connection.cursor()
+    select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
+    blog_id = int(blog_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [blog_id])
+    data = cursor.fetchall()
+    heading = data[0][0]
+    time_published = data[0][1].strftime("%d-%b-%Y (%H:%M:%S)")
+    theme = data[0][2]
+    flag_id = data[0][3]
+    auth_id = data[0][4]
+    content = data[0][5]
+
+    select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
+    auth_id = int(auth_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [auth_id])
+    data = cursor.fetchall()
+    auth_name = data[0][0]
+
+    select_stmt = "SELECT Flag FROM flags WHERE Flag_ID=%s"
+    auth_id = int(flag_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [flag_id])
+    data = cursor.fetchall()
+
+    flag_name = data[0][0]
 
 	form = Comment()
 	cursor = db.connection.cursor()
@@ -288,7 +308,6 @@ def upload_blog(auth_id):
         timestamp=datetime.datetime.now()
         f = request.files['doc']
         name = f.filename
-        APP_ROOT = os.path.dirname(os.path.abspath(__file__))
         f.save(name)
         fin = open(name)
         filedata = fin.readlines()
@@ -322,6 +341,147 @@ def create(auth_id):
         return render_template("create_blog.html", message = "Succesfully submitted!")
     return render_template("create_blog.html",form=form)
 
+@app.route("/delete_blog/<blog_id>", methods=["POST","GET"])
+def delete_blog(blog_id):
+    cursor = db.connection.cursor()
+    try:
+        pic_path = session['pic']
+        select_stmt = "SELECT Auth_ID FROM blogs WHERE Blog_ID=%s"
+        delete_stmt = "DELETE FROM blogs WHERE Blog_ID = %s"
+        cursor.execute(select_stmt, [blog_id])
+        auth_id = int(cursor.fetchall()[0][0])
+        # deleting blog
+        cursor.execute(delete_stmt, [blog_id])
+        db.connection.commit()
+        # deletion done
+        select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID=%s"
+        cursor.execute(select_stmt, [auth_id])
+
+        data = cursor.fetchall()
+        headings = []
+
+        for i in data:
+            temp = [i[0], i[1]]
+            headings.append(temp)
+
+        return render_template("author.html", pic = pic_path, headings = headings)
+    except:
+        return "Failed!"
+
+@app.route('/delete_auth/<auth_id>', methods=["POST","GET"])
+def delete_auth(auth_id):
+    cursor = db.connection.cursor()
+    try:
+        delete_stmt = 'DELETE FROM author WHERE Auth_id = %s'
+        cursor.execute(delete_stmt,[auth_id])
+        db.connection.commit()
+        return redirect(url_for('logout'))
+    except:
+        return "Failed!"
+
+@app.route('/edit_profile/<auth_id>', methods=["POST","GET"])
+def edit_profile(auth_id):
+   return render_template("edit_profile.html")
+
+@app.route('/edit_name/<auth_id>', methods=["POST","GET"])
+def edit_name(auth_id):
+    form = EditName()
+    if form.validate_on_submit():
+        try:
+            name = form.name.data
+            update_stmt = "UPDATE author SET Name=%s WHERE Auth_ID=%s"
+            cursor = db.connection.cursor()
+            cursor.execute(update_stmt,[name, auth_id])
+            db.connection.commit()
+            return redirect(url_for('edit_profile',auth_id=auth_id))
+        except:
+            return "Failed!"
+    return render_template("edit_name.html",form=form)
+
+@app.route('/edit_email/<auth_id>', methods=["POST","GET"])
+def edit_email(auth_id):
+    form = EditEmail()
+    if form.validate_on_submit():
+        try:
+            email = form.email.data
+            update_stmt = "UPDATE author SET Email=%s WHERE Auth_ID=%s"
+            search_stmt = "SELECT Email FROM author WHERE Auth_ID=%s"
+            cursor = db.connection.cursor()
+            cursor.execute(search_stmt,[auth_id])
+            data = cursor.fetchall()[0][0]
+            print("DATA", data)
+            if data == email:
+                print("Email same")
+                return render_template("edit_email.html", form=form, message="Email can not be the same as previous email")
+            cursor.execute(update_stmt,[email, auth_id])
+            db.connection.commit()
+            return render_template('edit_email.html',form=form, message="Success")
+        except:
+            print("Email already exists!")
+            return render_template('edit_email.html',form=form, message="Email ID already taken")
+    return render_template("edit_email.html", form=form, message= "test")
+
+@app.route('/edit_password/<auth_id>', methods=["POST","GET"])
+def edit_password(auth_id):
+    form = EditPassword()
+    if form.validate_on_submit():
+        try:
+            password = form.password.data
+            print("password", password)
+            update_stmt = "UPDATE author SET Password=%s WHERE Auth_ID=%s"
+            cursor = db.connection.cursor()
+            cursor.execute(update_stmt,[password, auth_id])
+            db.connection.commit()
+            return redirect(url_for('edit_profile', auth_id=auth_id))
+        except:
+            print("failed")
+            return render_template('edit_password.html',form=form, message="Failed")
+    return render_template("edit_password.html",form=form)
+
+
+
+@app.route('/edit_bio/<auth_id>', methods=["POST","GET"])
+def edit_bio(auth_id):
+    form = EditBio()
+    if form.validate_on_submit():
+        bio = form.bio.data
+        update_stmt = "UPDATE author SET Biography=%s WHERE Auth_ID=%s"
+        cursor = db.connection.cursor()
+        cursor.execute(update_stmt,[bio, auth_id])
+        db.connection.commit()
+        return redirect(url_for('edit_profile', auth_id=auth_id))
+    return render_template("edit_bio.html",form=form)
+
+@app.route('/edit_pic/<auth_id>', methods=["POST","GET"])
+def edit_pic(auth_id):
+    form = EditPic()
+    cursor = db.connection.cursor()
+    if form.validate_on_submit():
+        '''DELETING OLD FILE'''
+        search_stmt = "SELECT Picture FROM author WHERE Auth_ID=%s"
+        cursor.execute(search_stmt,[auth_id])
+        data = cursor.fetchall()[0][0]
+        cwd = os.getcwd() + '/static/' + data
+        print("FILE NAME", cwd)
+        os.remove(cwd)
+
+
+        '''GENERATE unique filename'''
+        try:
+            unique_name = str(uuid.uuid4())+'.jpeg'
+            filepath = 'author_data/images/' + unique_name
+            '''INSERT to database'''
+            insert_stmt = "UPDATE author SET Picture=%s WHERE Auth_ID=%s"
+            data = (filepath,auth_id)
+           
+            cursor.execute(insert_stmt,data)
+            db.connection.commit()
+        except:
+            return render_template("edit_pic.html", form = form, message = "Could not upload Image")
+        _ = images.save(form.image.data,name=unique_name)
+        print("return success",filepath, unique_name)
+        return render_template("edit_profile.html", message = "Success")
+    return render_template("edit_pic.html", form = form)
 
 if __name__ == "__main__":
     app.run(debug =False,host="0.0.0.0",port=5000)

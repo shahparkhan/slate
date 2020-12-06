@@ -46,7 +46,29 @@ class UploadStory(FlaskForm):
     title = StringField(label='Title',validators = [InputRequired()])
     theme = SelectField(label="Theme: ", choices =themes, validators = [InputRequired()])
     submit = SubmitField(label='Upload New Story!')
-        
+
+class EditName(FlaskForm):
+    name = StringField(label='New user name Name',validators = [InputRequired()])
+    submit = SubmitField(label='submit')
+
+class EditEmail(FlaskForm):
+    email = StringField('Email',
+                    validators = [InputRequired(), Email()])
+    submit = SubmitField(label='submit')
+
+class EditPassword(FlaskForm):
+    password = PasswordField('Password', validators = [InputRequired()])
+    confirm_password = PasswordField('Confirm Password',
+                                     validators = [InputRequired(), EqualTo('password')])
+    submit = SubmitField(label='submit')
+
+class EditBio(FlaskForm):
+    bio = StringField('Biography', validators = [InputRequired()])
+    submit = SubmitField(label='submit')
+
+class EditPic(FlaskForm):
+    image = FileField('Image', validators = [InputRequired()])
+    submit = SubmitField(label='submit')
 
 class Comment(FlaskForm):
 	comment = StringField(label='Comment',validators = [InputRequired()])
