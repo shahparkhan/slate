@@ -1,23 +1,12 @@
 {% extends "base.html" %}
-
-    
-
 {% block title %}
-{{ heading }}
 {% endblock %}
 
 {% block heading %}
 	{{ heading }}
 {% endblock %}
 
-
-
-
 {% block content %}
-<!-- <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-</head> -->
-
 <div>
 
 	<table class = "table_about">
@@ -26,36 +15,64 @@
             <th class = "th_td_content">Theme</th>
             <th class = "th_td_content">Author</th>
             <th class = "th_td_content">Flag</th>
-            <th class = "th_td_content">Views</th>
-            <th class = "th_td_content">Applauds</th>
         </tr>
         <tr>
             <td class = "th_td_content">{{ time_published }}</td>
             <td class = "th_td_content">{{ theme }}</td>
-            <td class = "th_td_content"><a href="{{url_for('author', auth_id = auth_id )}}">{{ author }}</a></td>
+            <td class = "th_td_content">{{ author }}</td>
             <td class = "th_td_content">{{ flag }}</td>
-            <td class = "th_td_content">{{ views }}</td>
-            <td class = "th_td_content">{{ applauds }}</td>
     </table>
 
 </div>
 
-<div>
-    <h4><a href="{{url_for('report',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
-        src="{{url_for('static', filename= 'report.ico')}}"></a> Report</h4>
-</div>
-
-<div>
-    <h4><a href="{{url_for('applaud',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
-        src="{{url_for('static', filename= 'clapping.ico')}}"></a> Applaud! </h4>
-</div>
-
-
-<br>
+<br><br>
 
 <div class = "blog_content">
 	{{ content }}
 </div>
 
     
+<br>
+
+<!-- Comments Container -->
+<div>
+    {% if 'user' in session %}
+        <form action="{{url_for('blog_display', blog_id = blog_id)}}" enctype= "multipart/form-data" method="POST" style="padding:5px;">
+            
+            <div class = "comment_field">
+                
+                <!-- Title Field -->
+                {{ form.comment.label(class_="login_text") }} <br>
+                {{ form.comment(class_="login_field") }}         
+
+                <!-- Submit Comment -->
+                {{ form.csrf_token }}
+                {{ form.submit(class_="login_button") }} 
+            </div>
+
+        </form> 
+    {% endif %}
+
+    <br>
+
+    <h1> Comments </h1>
+
+    <br>
+
+   <table class = "table_about">
+        <tr>
+            <th class = "th_td_content">Author</th>
+            <th class = "th_td_content">Published At</th>
+            <th class = "th_td_content">Comment</th>
+        </tr>
+        {% for item in comments %}
+        <tr>
+            <td class = "th_td_content"><a href = "{{url_for('author', auth_id = item[3])}}">{{ item[1] }}</a></td>
+            <td class = "th_td_content">{{ item[2] }}</td>
+            <td class = "th_td_content">{{ item[0] }}</td>
+        {% endfor %}
+    </table>
+
+</div>
+
 {% endblock %}
