@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}
+Followers
+{% endblock %}
+
+{% block heading %}
+    You are following
+{% endblock %}
+
+{% block content %}
+    <ol>
+        {% for item in authors %}
+            <a href= "{{url_for('author', auth_id = item[1] )}}"><li>{{ item[0] }}</li></a>
+        {% endfor %}
+    </ol>
+{% endblock %}

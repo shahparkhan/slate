@@ -8,7 +8,7 @@ Author
 {% endblock %}
 
 {% block content %}
-{% if 'You are now following this author!'== message %}
+{% if 'You are now following this author!'== message or 'You are not following this author anymore.' == message %}
 	{{ message }}
 {% else %}
 <div>
@@ -20,16 +20,20 @@ Author
     <h3>{{ bio }}</h3>
 </div>
 <br>
-{% if auth_id != session['user_id'] %}
-	{% if 'Followed' == message %}
-		<div class = "signup_button"> Following </div>
-	{% else %}
-		<div class = "signup_button">
-			<a href="{{url_for('follow',follower = session['user_id'] , following = auth_id )}}">Follow</a>
-		</div>
+
+{% if 'user' in session %}
+	{% if auth_id != session['user_id'] %}
+		{% if 'Followed' == message %}
+			<div class = "signup_button">
+				<a href="{{url_for('unfollow',follower = session['user_id'] , following = auth_id )}}">Unfollow</a>
+			</div>
+		{% else %}
+			<div class = "signup_button">
+				<a href="{{url_for('follow',follower = session['user_id'] , following = auth_id )}}">Follow</a>
+			</div>
+		{% endif %}
 	{% endif %}
 {% endif %}
-
 
 {% if 'user' in session %}
 	{% if session['user_id'] == auth_id %}
@@ -49,6 +53,14 @@ Author
 			<a href="{{url_for('upload_blog',auth_id = session['user_id'])}}">Upload New Story</a>
 		</div>
 
+		<div class="signup_button">
+			<a href="{{url_for('display_followers',auth_id = session['user_id'])}}">Followers</a>
+		</div>
+
+		<div class="signup_button">
+			<a href="{{url_for('display_following',auth_id = session['user_id'])}}">Following</a>
+		</div>
+
 	{% endif %}
 {% endif %}
 
@@ -57,7 +69,7 @@ Author
 <div>
 	<h1> Blogs </h1>
 
-	<br><br>
+	<br>
 
 	<ol>
 		{% for item in headings %}
@@ -66,6 +78,7 @@ Author
 		{% endfor %}
 	</ol>
 </div>
+
 
 {% endif %}
 {% endblock %}

@@ -15,7 +15,7 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'password'
+app.config['MYSQL_PASSWORD'] = 'tigris52'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
@@ -193,15 +193,15 @@ def author(auth_id):
     auth_id = str(auth_id)
 
     msg = ''
-    exist_stmt = "SELECT EXISTS(SELECT * FROM follow WHERE Author_ID = %s AND Follower_ID = %s )"
-    data = (auth_id, session['user_id'])
-    cursor = db.connection.cursor()
-    cursor.execute(exist_stmt, data)
-    exists = cursor.fetchall()
-    exists = int(exists[0][0])
-    
-    if exists:
-        msg = 'Followed'
+    if ( 'user_id' in session):
+        exist_stmt = "SELECT EXISTS(SELECT * FROM follow WHERE Author_ID = %s AND Follower_ID = %s )"
+        data = (auth_id, session['user_id'])
+        cursor = db.connection.cursor()
+        cursor.execute(exist_stmt, data)
+        exists = cursor.fetchall()
+        exists = int(exists[0][0])
+        if exists:
+            msg = 'Followed'
 
     return render_template("Author.html", name = name, 
                                         bio = bio, 
@@ -316,6 +316,65 @@ def follow(follower, following):
         cursor.execute(insert_follow,data_follow)
         db.connection.commit()
     return render_template("author.html", message = 'You are now following this author!')
+
+@app.route("/unfollow/<follower>/<following>")
+def unfollow(follower, following):
+    delete_stmt = 'DELETE FROM follow WHERE Follower_id = %s AND Author_ID = %s'
+    cursor = db.connection.cursor()
+    data = (follower,following)
+    cursor.execute(delete_stmt,data)
+    db.connection.commit()
+    return render_template("author.html", message = 'You are not following this author anymore.')
+
+
+@app.route("/followers/<auth_id>")
+def display_followers(auth_id):
+    search_stmt = "SELECT Follower_ID FROM follow WHERE Author_ID=%s"
+    cursor = db.connection.cursor()
+    cursor.execute(search_stmt,[auth_id])
+    data = cursor.fetchall()
+    auth_ids = []
+    for i in data:
+        temp = i[0]
+        auth_ids.append(temp)
+
+    authors = []
+    #now select the names of the authors who are your followers and display them
+    select_author = "SELECT Name FROM author WHERE Auth_ID=%s"
+    cursor = db.connection.cursor()
+    for i in auth_ids:
+        cursor.execute(select_author,[i])
+        data = cursor.fetchall()
+        authors.append([data[0][0],i])
+
+    return render_template ("followers.html",authors = authors)
+
+
+
+
+@app.route("/following/<auth_id>")
+def display_following(auth_id):
+    search_stmt = "SELECT Author_ID FROM follow WHERE Follower_ID=%s"
+    cursor = db.connection.cursor()
+    cursor.execute(search_stmt,[auth_id])
+    data = cursor.fetchall()
+    auth_ids = []
+    for i in data:
+        temp = i[0]
+        auth_ids.append(temp)
+
+    authors = []
+    #now select the names of the authors who are you're following and display them
+    select_author = "SELECT Name FROM author WHERE Auth_ID=%s"
+    cursor = db.connection.cursor()
+    for i in auth_ids:
+        cursor.execute(select_author,[i])
+        data = cursor.fetchall()
+        authors.append([data[0][0],i])
+
+    return render_template ("following.html",authors = authors)
+
+
 
 
 
