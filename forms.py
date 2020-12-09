@@ -53,7 +53,7 @@ class Comment(FlaskForm):
 	submit = SubmitField(label='Post Comment')
 
 class EditName(FlaskForm):
-    name = StringField(label='New user name Name',validators = [InputRequired()])
+    name = StringField(label='New Username',validators = [InputRequired()])
     submit = SubmitField(label='submit')
 
 class EditEmail(FlaskForm):
@@ -68,9 +68,21 @@ class EditPassword(FlaskForm):
     submit = SubmitField(label='submit')
 
 class EditBio(FlaskForm):
-    bio = StringField('Biography', validators = [InputRequired()])
+    bio = StringField(label = 'Biography', validators = [InputRequired()])
     submit = SubmitField(label='submit')
 
 class EditPic(FlaskForm):
     image = FileField('Image', validators = [InputRequired()])
     submit = SubmitField(label='submit')
+
+class AuthorSearch(FlaskForm):
+    name = StringField(label = 'Name')
+    email = StringField(label = 'Email')
+    submit = SubmitField(label='Search')
+
+class ArticleSearch(FlaskForm):
+    title = StringField(label = 'Title')
+    author = StringField(label = 'Author')
+    themes = ("-","Wholesome", "Tech", "Humour", "Mystic", "Sci-Fi", "Entertainment", "Food", "Sport", "Religious", "Random")
+    theme = SelectField(label="Theme ", choices = themes)
+    submit = SubmitField(label='Search')

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %} Home {% endblock %}
+{% block heading %} Author Search {% endblock %}
+
+{% block content %}
+
+	{% if 'Either enter a valid email address, or leave the field empty' == message %}
+	    <h3 style="color:tomato; text-align: center;">
+	        {{ message }}
+	    </h3>
+	{% elif 'Please enter text in the fields and then hit search' == message %}
+	    <h3 style="color:tomato; text-align: center;">
+	        {{ message }}
+	    </h3>
+
+	{% elif 'No search results found :(' == message %}
+	    <h3 style="color:tomato; text-align: center;">
+	        {{ message }}
+	    </h3>
+	{% endif %}
+
+    <br><br>
+    <div class="signup_container">
+
+    	<form action="{{url_for('search_article')}}" enctype="multipart/form-data" method="POST"
+		    style="padding:5px;">
+		    <!-- <div class="signup_container"></div> -->
+		    <!-- Email Field -->
+		        {{ form.title.label(class_="login_text") }} <br>
+		        {{ form.title(class_="login_field") }}
+		        
+		        <br>
+				
+				{{ form.author.label(class_="login_text") }} <br>
+		        {{ form.author(class_="login_field") }}
+
+		        <br>
+
+		        {{ form.theme.label }} <br>
+    			{{ form.theme }} 		        
+		        
+    			<br>
+
+		        {{ form.csrf_token }}
+		        {{ form.submit(class_="signup_button") }}
+		    <!-- </div> -->
+		</form>
+
+    </div>
+
+{% endblock %}
+

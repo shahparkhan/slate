@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %} Home {% endblock %}
+{% block heading %} Author Search Results {% endblock %}
+
+{% block content %}
+
+	<h2 style="text-align: center;">
+		{{ message }}
+	</h2>
+
+    <br><br>
+
+
+    <table class = "table_about">
+        <tr>
+            <th class = "th_td_content">Title</th>
+            <th class = "th_td_content">{{ trend }}</th>
+        </tr>
+
+        {% for article in items %}
+        <tr>
+		    <td class = "th_td_content"><a href= "{{url_for('blog_display', blog_id = article[1], update = 1 )}}">{{ article[0] }}</a></td>
+            <td class = "th_td_content">{{ article[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endblock %}
+

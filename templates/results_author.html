@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %} Home {% endblock %}
+{% block heading %} Author Search Results {% endblock %}
+
+{% block content %}
+
+    <br><br>
+
+    <ol>
+		{% for item in authors %}
+		    <a href= "{{url_for('author', auth_id = item[1])}}"><li>{{ item[0] }}</li></a>
+		{% endfor %}
+	</ol>
+
+{% endblock %}
+

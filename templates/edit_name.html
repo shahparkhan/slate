@@ -14,22 +14,26 @@ Edit Name
 
 {% block content %}
 {% if form %}
-    <form action="{{url_for('edit_name',auth_id = session['user_id'])}}" enctype="multipart/form-data" method="POST" style="padding:5px;">
-        <div class="signup_container">
-            <!-- Full Name Field -->
-            {{ form.name.label(class_="login_text") }} <br>
-            {{ form.name(class_="login_field") }}
-            <br>
-            {% if form.name.errors %}
-                {% for error in form.name.errors %}
-                    <b style="color:tomato;"> {{ error }} </b>
-                    <br>
-                {% endfor %}
-            {% endif %}
-            {{ form.csrf_token }}
-            {{ form.submit(class_="signup_button") }}
-        </div>
-    </form>
+    
+    <div class="signup_container">
+        <form action="{{url_for('edit_name',auth_id = session['user_id'])}}" enctype="multipart/form-data" method="POST" style="padding:5px;">
+            
+                <!-- Full Name Field -->
+                {{ form.name.label(class_="login_text") }} <br>
+                {{ form.name(class_="login_field") }}
+                <br>
+                {% if form.name.errors %}
+                    {% for error in form.name.errors %}
+                        <b style="color:tomato;"> {{ error }} </b>
+                        <br>
+                    {% endfor %}
+                {% endif %}
+                {{ form.csrf_token }}
+                {{ form.submit(class_="shadow_button") }}
+            
+        </form>
+    </div>
+    
 {% endif %}
 
 

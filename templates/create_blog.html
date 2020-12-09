@@ -11,46 +11,51 @@ Create New Story
 
 {{ message }}
 
+
+
 {% if form %}
-<form action="{{url_for('create',auth_id = session['user_id'])}}" enctype= "multipart/form-data" method="POST" style="padding:5px;">
+
     
-   
-    <!-- Title Field -->
-    {{ form.title.label(class_="login_text") }} <br>
-    {{ form.title(class_="login_field") }} 
-    <br>
-    {% if form.title.errors %}
-        {% for error in form.title.errors %}
-        <b style="color:tomato;"> {{ error }} </b> 
+    <form action="{{url_for('create',auth_id = session['user_id'])}}" enctype= "multipart/form-data" method="POST" style="padding:5px;">
+        
+       
+        <!-- Title Field -->
+        {{ form.title.label(class_="login_text") }} <br>
+        {{ form.title(class_="login_field") }} 
         <br>
-        {% endfor %}
-    {% endif %}
+        {% if form.title.errors %}
+            {% for error in form.title.errors %}
+            <b style="color:tomato;"> {{ error }} </b> 
+            <br>
+            {% endfor %}
+        {% endif %}
 
-    <!-- Theme Field -->
-    {{ form.theme.label }} <br>
-    {{ form.theme }} 
-    <br>
-    {% if form.theme.errors %}
-        {% for error in form.theme.errors %}
-        <b style="color:tomato;"> {{ error }} </b> 
+        <!-- Theme Field -->
+        {{ form.theme.label }} <br>
+        {{ form.theme }} 
         <br>
-        {% endfor %}
-    {% endif %}
+        {% if form.theme.errors %}
+            {% for error in form.theme.errors %}
+            <b style="color:tomato;"> {{ error }} </b> 
+            <br>
+            {% endfor %}
+        {% endif %}
 
-    <!-- Content Field -->
-    {{ form.content.label(class_="login_text") }} <br>
-    {{ form.content(class_="content_field") }}
-    <br>
-    {% if form.content.errors %}
-        {% for error in form.content.errors %}
-        <b style="color:tomato;"> {{ error }} </b> 
+        <!-- Content Field -->
+        {{ form.content.label(class_="login_text") }} <br>
+        {{ form.content(class_="content_field") }}
         <br>
-        {% endfor %}
-    {% endif %}
+        {% if form.content.errors %}
+            {% for error in form.content.errors %}
+            <b style="color:tomato;"> {{ error }} </b> 
+            <br>
+            {% endfor %}
+        {% endif %}
 
-    {{ form.csrf_token }}
-    {{ form.submit(class_="login_button") }}    
-    
-</form> 
+        {{ form.csrf_token }}
+        {{ form.submit(class_="shadow_button") }}    
+        
+    </form>
+
 {% endif %}
 {% endblock %}

@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request
-from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment, EditName, EditEmail, EditBio, EditPic, EditPassword
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment, EditName, EditEmail, EditBio, EditPic, EditPassword, AuthorSearch, ArticleSearch
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
 import datetime
 from flask import session, redirect, url_for
 import os
+import re
 #from pymysql.cursors import DictCursor
 
 app = Flask(__name__)
@@ -15,7 +16,7 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'tigris52'
+app.config['MYSQL_PASSWORD'] = 'password'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
@@ -453,6 +454,9 @@ def create(auth_id):
 
 @app.route("/report/<blog_id>")
 def report(blog_id):
+    if 'user' not in session:
+        return redirect(url_for('blog_display',blog_id= blog_id,update = 0))
+
     auth_id = int (session['user_id'])
     blog_id = int( blog_id )
     exist_stmt = "SELECT EXISTS(SELECT * FROM reports WHERE Auth_ID = %s AND Blog_ID = %s )"
@@ -477,6 +481,10 @@ def report(blog_id):
 
 @app.route("/applaud/<blog_id>")
 def applaud(blog_id):
+
+    if 'user' not in session:
+        return redirect(url_for('blog_display',blog_id= blog_id,update = 0))
+
     auth_id = int (session['user_id'])
     blog_id = int( blog_id )
     exist_stmt = "SELECT EXISTS(SELECT * FROM applauds WHERE Auth_ID = %s AND Blog_ID = %s )"
@@ -642,6 +650,427 @@ def edit_pic(auth_id):
         print("return success",filepath, unique_name)
         return render_template("edit_profile.html", message = "Success")
     return render_template("edit_pic.html", form = form)
+
+
+def email_check(email):
+    regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+
+    if(re.search(regex,email)):  
+        return True  
+          
+    else:  
+        return False  
+      
+
+@app.route('/search_author', methods=["POST","GET"])
+def search_author():
+    form = AuthorSearch()
+    cursor = db.connection.cursor()
+
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+
+        if ( (name == "") and (email == "") ):
+            message = 'Please enter text in the fields and then hit search'
+            return render_template("search_author.html", form = form, message = message)
+
+        elif ( name == ""):
+            if ( (email_check(email) == False) ):
+                message = 'Either enter a valid email address, or leave the field empty'
+                return render_template("search_author.html", form = form, message = message)
+
+            else:
+                search_stmt = "SELECT Name, Auth_ID FROM author WHERE Email = %s"
+                cursor.execute(search_stmt,[email])
+                data = cursor.fetchall()
+
+                if len(data) == 0:
+                    message = 'No search results found :('
+                    return render_template("search_author.html", form = form, message = message)
+
+                authors = []
+
+                for i in data:
+                    temp = [i[0], i[1]]
+                    authors.append(temp)
+
+                return render_template("results_author.html", authors = authors)            
+
+        elif (email == ""):
+            search_stmt = "SELECT Name, Auth_ID FROM author WHERE Name LIKE %s"
+            like_stmt = '%' + name + '%'
+            cursor.execute(search_stmt,[like_stmt])
+            data = cursor.fetchall()
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_author.html", form = form, message = message)
+
+            authors = []
+
+            for i in data:
+                temp = [i[0], i[1]]
+                authors.append(temp)
+
+            return render_template("results_author.html", authors = authors)
+
+        else:
+            search_stmt = "SELECT Name, Auth_ID FROM author WHERE Name = %s AND Email = %s"
+            cursor.execute(search_stmt,[name, email])
+            data = cursor.fetchall()
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_author.html", form = form, message = message)
+
+            authors = []
+
+            for i in data:
+                temp = [i[0], i[1]]
+                authors.append(temp)
+
+            return render_template("results_author.html", authors = authors)
+
+    return render_template("search_author.html", form = form)
+
+
+@app.route('/search_article', methods=["POST","GET"])
+def search_article():
+    form = ArticleSearch()
+    cursor = db.connection.cursor()
+
+    if form.validate_on_submit():
+        title = form.title.data
+        author = form.author.data
+        theme = form.theme.data
+
+        print(title, "-", author, "-", theme)
+        if ( (title == "") and (author == "") and (theme == "-") ):
+            message = 'Please enter text in the fields and then hit search'
+            return render_template("search_article.html", form = form, message = message)
+
+        elif ( (title == "") and (author == "") ):
+
+            select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Theme = %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [theme])
+            data = cursor.fetchall()
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            items = []
+
+            for i in data:
+                temp = [i[0], i[1]]
+                items.append(temp)
+
+            message = "Theme: " + theme
+
+            items = [[message, items]]
+
+            return render_template("results_article.html", items = items)
+
+        elif ( (author == "") and (theme == "-") ):
+
+            like_stmt = '%' + title + '%'
+
+            select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Heading LIKE %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [like_stmt])
+            data = cursor.fetchall()
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            items = []
+
+            for i in data:
+                temp = [i[0], i[1]]
+                items.append(temp)
+
+            message = "Title: " + title
+
+            items = [[message, items]]
+
+
+            return render_template("results_article.html", items = items)
+
+        elif ( (theme == "-") and (title == "") ):
+
+            like_stmt = '%' + author + '%'
+
+            select_stmt = "SELECT Auth_ID, Name FROM author WHERE Name LIKE %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [like_stmt])
+            data = cursor.fetchall()
+
+            print(data, data[0], data[0][0], data[0][1])
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            num_authors = len(data)
+
+
+            items = []
+
+            for i in range(num_authors):
+
+                auth_id = int(data[i][0])
+                auth_name = str(data[i][1])
+
+                select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID = %s"
+                cursor = db.connection.cursor()
+                cursor.execute(select_stmt, [auth_id])
+                data1 = cursor.fetchall()
+
+                if len(data1) == 0:
+                    continue
+
+                sub_items = []
+
+                for i in data1:
+                    temp = [i[0], i[1]]
+                    sub_items.append(temp)
+
+                message = "Author: " + auth_name
+
+                items.append([message, sub_items])
+
+            if len(items) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+            
+            return render_template("results_article.html", items = items)
+
+        elif ( (theme == "-") ):
+
+            like_stmt = '%' + author + '%'
+
+            select_stmt = "SELECT Auth_ID, Name FROM author WHERE Name LIKE %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [like_stmt])
+            data = cursor.fetchall()
+
+            print(data, data[0], data[0][0], data[0][1])
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            num_authors = len(data)
+
+            items = []
+
+            for i in range(num_authors):
+
+                auth_id = int(data[i][0])
+                auth_name = str(data[i][1])
+
+                like_stmt = '%' + title + '%'
+
+                select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID = %s AND Heading LIKE %s"
+                cursor = db.connection.cursor()
+                cursor.execute(select_stmt, [auth_id, like_stmt])
+                data1 = cursor.fetchall()
+
+                if len(data1) == 0:
+                    continue
+
+                sub_items = []
+
+                for i in data1:
+                    temp = [i[0], i[1]]
+                    sub_items.append(temp)
+
+                message = "Author: " + auth_name + "\nTitle: " + title
+
+                items.append([message, sub_items])
+
+            if len(items) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+            
+            return render_template("results_article.html", items = items)
+
+        elif ( (title == "") ):
+
+            like_stmt = '%' + author + '%'
+
+            select_stmt = "SELECT Auth_ID, Name FROM author WHERE Name LIKE %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [like_stmt])
+            data = cursor.fetchall()
+
+            print(data, data[0], data[0][0], data[0][1])
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            num_authors = len(data)
+
+            items = []
+
+            for i in range(num_authors):
+
+                auth_id = int(data[i][0])
+                auth_name = str(data[i][1])
+
+                select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID = %s AND Theme = %s"
+                cursor = db.connection.cursor()
+                cursor.execute(select_stmt, [auth_id, theme])
+                data1 = cursor.fetchall()
+
+                if i == 2:
+                    print(data1)
+
+                if len(data1) == 0:
+                    continue
+
+                sub_items = []
+
+                for i in data1:
+                    temp = [i[0], i[1]]
+                    sub_items.append(temp)
+
+                message = "Author: " + auth_name + "\nTheme: " + theme
+
+                items.append([message, sub_items])
+
+            if len(items) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+            
+            return render_template("results_article.html", items = items)
+
+        elif ( (author == "") ):
+
+            like_stmt = "%" + title + "%"
+
+            select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Theme = %s AND Heading LIKE %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [theme, like_stmt])
+            data = cursor.fetchall()
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            items = []
+
+            for i in data:
+                temp = [i[0], i[1]]
+                items.append(temp)
+
+            message = "Theme: " + theme + "\nTitle: " + title
+
+            items = [[message, items]]
+
+            return render_template("results_article.html", items = items)
+
+        else:
+
+            like_stmt = '%' + author + '%'
+
+            select_stmt = "SELECT Auth_ID, Name FROM author WHERE Name LIKE %s"
+            cursor = db.connection.cursor()
+            cursor.execute(select_stmt, [like_stmt])
+            data = cursor.fetchall()
+
+            print(data, data[0], data[0][0], data[0][1])
+
+            if len(data) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+
+            num_authors = len(data)
+
+            items = []
+
+            for i in range(num_authors):
+
+                auth_id = int(data[i][0])
+                auth_name = str(data[i][1])
+
+                like_stmt = '%' + title + '%'
+
+                select_stmt = "SELECT Heading, Blog_ID FROM blogs WHERE Auth_ID = %s AND Theme = %s AND Heading LIKE %s"
+                cursor = db.connection.cursor()
+                cursor.execute(select_stmt, [auth_id, theme, like_stmt])
+                data1 = cursor.fetchall()
+
+                if i == 2:
+                    print(data1)
+
+                if len(data1) == 0:
+                    continue
+
+                sub_items = []
+
+                for i in data1:
+                    temp = [i[0], i[1]]
+                    sub_items.append(temp)
+
+                message = "Author: " + auth_name + "\nTheme: " + theme + "\nTitle: " + title
+
+                items.append([message, sub_items])
+
+            if len(items) == 0:
+                message = 'No search results found :('
+                return render_template("search_article.html", form = form, message = message)
+            
+            return render_template("results_article.html", items = items)
+
+
+    return render_template("search_article.html", form = form)
+
+@app.route('/trending/<trend>', methods=["POST","GET"])
+def trending(trend):
+
+    cursor = db.connection.cursor()
+    
+    trend = str(trend)
+
+    if trend == "views":
+        select_stmt = "SELECT Heading, Blog_ID, Views FROM blogs NATURAL JOIN interactions ORDER BY Views DESC LIMIT 10"
+        cursor.execute(select_stmt)
+        data = cursor.fetchall()
+
+        items = []
+
+        for i in data:
+            temp = [i[0], i[1], i[2]]
+            items.append(temp)
+
+        message = "Top 10 Views"
+        trend = "Views"
+        return render_template("trending.html", items = items, message = message, trend = trend)
+
+    elif trend == "applauds":
+        select_stmt = "SELECT Heading, Blog_ID, Applauds FROM blogs NATURAL JOIN interactions ORDER BY Applauds DESC LIMIT 10"
+        cursor.execute(select_stmt)
+        data = cursor.fetchall()
+
+        items = []
+
+        for i in data:
+            temp = [i[0], i[1], i[2]]
+            items.append(temp)
+
+        message = "Top 10 Applauds"
+        trend = "Applauds"
+
+        return render_template("trending.html", items = items, message = message, trend = trend)
+
+    else:
+
+        return render_template("home.html")
 
 
 if __name__ == "__main__":
