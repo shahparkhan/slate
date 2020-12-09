@@ -7,5 +7,24 @@
 
     <p> You can post your blogs here. Happy submitting! </p>
 
+    <br><br>
+    <div class="signup_container">
+    	<h2>
+    		What are you looking for?
+    	</h2>
+    	<a href="{{url_for('search_author')}}"><button type="button" class="signup_button">Author</button></a>
+    	<a href="{{url_for('search_article')}}"><button type="button" class="signup_button">Article</button></a>
+    </div>
+
+    <br>
+
+    <div class="signup_container">
+    	<h2>
+    		Top Trending
+    	</h2>
+    	<a href="{{url_for('trending', trend = 'views')}}"><button type="button" class="signup_button">By View</button></a>
+    	<a href="{{url_for('trending', trend = 'applauds')}}"><button type="button" class="signup_button">By Applauds</button></a>
+    </div>
+
 {% endblock %}
 

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %} Home {% endblock %}
+{% block heading %} Article Search Results {% endblock %}
+
+{% block content %}
+
+	{% for item in items %}
+		
+		<h2 style = "white-space: pre-line;">
+			{{ item[0] }}
+		</h2>
+
+	    <br>
+
+
+	    <ol>
+			{% for article in item[1] %}
+			    <a href= "{{url_for('blog_display', blog_id = article[1], update = 1 )}}"><li>{{ article[0] }}</li></a>
+			{% endfor %}
+		</ol>
+
+		<br>
+
+	{% endfor %}
+
+{% endblock %}
+

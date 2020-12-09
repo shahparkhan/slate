@@ -30,18 +30,21 @@
 
 </div>
 
-<div>
+<br>
+
+<div class = "interact_button">
     <h4><a href="{{url_for('report',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
         src="{{url_for('static', filename= 'report.ico')}}"></a> Report</h4>
 </div>
 
-<div>
+<div class = "interact_button">
     <h4><a href="{{url_for('applaud',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
         src="{{url_for('static', filename= 'clapping.ico')}}"></a> Applaud! </h4>
 </div>
 
-<div class = "blog_content">
-	{{ content }}
+
+<div class="blog_content">
+      {{ content }}
 </div>
 
     
@@ -68,7 +71,7 @@
 
     <br>
 
-    <h1> Comments </h1>
+    <h1 style = "text-align: center;"> Comments </h1>
 
     <br>
 

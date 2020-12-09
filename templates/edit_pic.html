@@ -13,24 +13,27 @@ Edit Name
 {% endif %}
 
 {% block content %}
+
 {% if form %}
-<form action="{{url_for('edit_pic',auth_id = session['user_id'])}}" enctype="multipart/form-data" method="POST"
-    style="padding:5px;">
-    <!-- <div class="signup_container"></div> -->
-    <!-- Image Field -->
-    {{ form.image.label(class_="login_text") }} <br>
-    {{ form.image }}
-    <br>
-    {% if form.image.errors %}
-        {% for error in form.image.errors %}
-        <b style="color:tomato;"> {{ error }} </b>
-        <br>
-        {% endfor %}
-    {% endif %}
-    
-    {{ form.csrf_token }}
-    {{ form.submit(class_="signup_button") }}
-    <!-- </div> -->
-</form>
+    <div class = "signup_container">
+        <form action="{{url_for('edit_pic',auth_id = session['user_id'])}}" enctype="multipart/form-data" method="POST"
+            style="padding:5px;">
+            <!-- <div class="signup_container"></div> -->
+            <!-- Image Field -->
+            {{ form.image.label(class_="login_text") }} <br>
+            {{ form.image }}
+            <br>
+            {% if form.image.errors %}
+                {% for error in form.image.errors %}
+                <b style="color:tomato;"> {{ error }} </b>
+                <br>
+                {% endfor %}
+            {% endif %}
+            
+            {{ form.csrf_token }}
+            {{ form.submit(class_="shadow_button") }}
+            <!-- </div> -->
+        </form>
+    </div>
 {% endif %}
 {% endblock %}
