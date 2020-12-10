@@ -229,17 +229,21 @@ def blog_display(blog_id,update):
         db.connection.commit()
 
     if form2.validate_on_submit():
+
         link = str(form2.link.data)
-        split_link = link.split('watch?v=')
-        split_left = split_link[0]
-        split_right = split_link[1].split('&')
-        split_right = split_right[0]
+        if link != "":
+            
+            
+            split_link = link.split('watch?v=')
+            split_left = split_link[0]
+            split_right = split_link[1].split('&')
+            split_right = split_right[0]
 
-        final_link = split_left + 'embed/' + split_right
+            final_link = split_left + 'embed/' + split_right
 
-        update_stmt = "UPDATE blogs SET Youtube = %s WHERE Blog_ID = %s"
-        cursor.execute(update_stmt,[final_link, blog_id])
-        db.connection.commit()
+            update_stmt = "UPDATE blogs SET Youtube = %s WHERE Blog_ID = %s"
+            cursor.execute(update_stmt,[final_link, blog_id])
+            db.connection.commit()
 
     select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content, Youtube FROM blogs WHERE Blog_ID=%s"
     cursor = db.connection.cursor()
