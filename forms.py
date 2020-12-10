@@ -86,3 +86,7 @@ class ArticleSearch(FlaskForm):
     themes = ("-","Wholesome", "Tech", "Humour", "Mystic", "Sci-Fi", "Entertainment", "Food", "Sport", "Religious", "Random")
     theme = SelectField(label="Theme ", choices = themes)
     submit = SubmitField(label='Search')
+
+class YoutubeUpload(FlaskForm):
+    link = StringField(label = 'Link')
+    submit = SubmitField(label = 'Upload')

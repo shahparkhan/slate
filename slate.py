@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment, EditName, EditEmail, EditBio, EditPic, EditPassword, AuthorSearch, ArticleSearch
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment, EditName, EditEmail, EditBio, EditPic, EditPassword, AuthorSearch, ArticleSearch, YoutubeUpload
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
@@ -216,6 +216,7 @@ def author(auth_id):
 def blog_display(blog_id,update):
 
     form = Comment()
+    form2 = YoutubeUpload()
     cursor = db.connection.cursor()
     blog_id = int(blog_id)
 
@@ -227,7 +228,20 @@ def blog_display(blog_id,update):
         cursor.execute(insert_stmt,data)
         db.connection.commit()
 
-    select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content FROM blogs WHERE Blog_ID=%s"
+    if form2.validate_on_submit():
+        link = str(form2.link.data)
+        split_link = link.split('watch?v=')
+        split_left = split_link[0]
+        split_right = split_link[1].split('&')
+        split_right = split_right[0]
+
+        final_link = split_left + 'embed/' + split_right
+
+        update_stmt = "UPDATE blogs SET Youtube = %s WHERE Blog_ID = %s"
+        cursor.execute(update_stmt,[final_link, blog_id])
+        db.connection.commit()
+
+    select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content, Youtube FROM blogs WHERE Blog_ID=%s"
     cursor = db.connection.cursor()
     cursor.execute(select_stmt, [blog_id])
     data = cursor.fetchall()
@@ -237,7 +251,12 @@ def blog_display(blog_id,update):
     flag_id = data[0][3]
     auth_id = data[0][4]
     content = data[0][5]
+    youtube = data[0][6]
 
+    print("youtube:", youtube)
+
+    if youtube == '-':
+        print("yes")            
     select_stmt = "SELECT Name FROM author WHERE Auth_ID=%s"
     auth_id = int(auth_id)
     cursor = db.connection.cursor()
@@ -295,11 +314,29 @@ def blog_display(blog_id,update):
                         flag = flag_name, 
                         content = content,
                         form = form,
+                        form2 = form2,
                         comments = comments,
                         blog_id = blog_id,
                         views = views,
                         applauds = applauds,
-                        auth_id = auth_id)
+                        auth_id = str(auth_id), 
+                        youtube = youtube)
+
+
+
+@app.route("/delete_youtube/<blog_id>/<update>", methods=["POST","GET"])
+def delete_youtube(blog_id, update):
+    print("here")
+    cursor = db.connection.cursor()
+    blog_id = int(blog_id)
+    update = int(update)
+
+    update_stmt = "UPDATE blogs SET Youtube = %s WHERE Blog_ID = %s"
+    cursor = db.connection.cursor()
+    cursor.execute(update_stmt,['-', blog_id])
+    db.connection.commit()
+
+    return redirect(url_for('blog_display',blog_id= blog_id,update = 0))
 
 
 @app.route("/follow/<follower>/<following>")
@@ -401,9 +438,9 @@ def upload_blog(auth_id):
         fin.close()
         os.remove(name)
 
-        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
+        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content, Youtube) VALUES (%s,%s,%s,%s,%s,%s,%s)"
         flag_id = 1
-        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,filedata)
+        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,filedata, '-')
         cursor.execute(insert_stmt,data)
         db.connection.commit()
 
@@ -429,12 +466,12 @@ def create(auth_id):
     form = CreateStory()
     if form.validate_on_submit():
         timestamp=datetime.datetime.now()
-        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content) VALUES (%s,%s,%s,%s,%s,%s)"
+        insert_stmt= "INSERT INTO blogs (Heading, Time_Published, Theme, Auth_ID, Flag_ID, Content, Youtube) VALUES (%s,%s,%s,%s,%s,%s,%s)"
         #blog_name = str(form.title.data)+'.docx'
         #filepath = 'author_data/blogs/' + blog_name
         # have to query database for flag id
         flag_id = 1
-        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data)
+        data = (form.title.data,timestamp,form.theme.data,auth_id,flag_id,form.content.data, '-')
         cursor.execute(insert_stmt,data)
         db.connection.commit()
 

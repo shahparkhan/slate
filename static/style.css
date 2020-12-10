@@ -144,6 +144,16 @@ input {
     font-size: 25px;
 }
 
+.youtube_container {
+    height: 580px;
+    width:  954px;
+    margin: auto;
+    border-radius: 10px;
+    
+    padding: 20px 20px 35px 20px;
+    text-align: center;
+}
+
 .signup_container {
     height: 35%;
     width:  30%;
