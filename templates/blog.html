@@ -32,6 +32,8 @@
 
 <br>
 
+{% if 'user' in session %}
+
 <div class = "interact_button">
     <h4><a href="{{url_for('report',blog_id = blog_id )}}"><img style= "width: 32px; height: 32px; "
         src="{{url_for('static', filename= 'report.ico')}}"></a> Report</h4>
@@ -42,6 +44,7 @@
         src="{{url_for('static', filename= 'clapping.ico')}}"></a> Applaud! </h4>
 </div>
 
+{% endif %}
 
 <div class="blog_content">
       {{ content }}
@@ -49,6 +52,66 @@
 
     
 <br>
+
+{% if '-' == youtube %}
+    
+    {% if 'user' in session %}
+        
+        {% if auth_id == session['user_id'] %}
+        
+            <form action="{{url_for('blog_display', blog_id = blog_id, update = 0)}}" enctype= "multipart/form-data" method="POST" style="padding:5px;">
+                
+                <div class = "comment_field">
+                    
+                    <!-- Title Field -->
+                    {{ form2.link.label(class_="login_text") }} <br>
+                    {{ form2.link(class_="login_field") }}         
+
+                    <!-- Submit Comment -->
+                    {{ form2.csrf_token }}
+                    {{ form2.submit(class_="login_button") }} 
+                </div>
+
+            </form> 
+        {% endif %}
+    {% endif %}
+
+{% else %}
+
+    {% if 'user' in session %}
+
+        {% if auth_id == session['user_id'] %}
+            
+            <div class = "youtube_container">
+                
+                <iframe width="854" height="480" src = "{{ youtube }}" allowFullScreen='allowFullScreen'></iframe>
+
+                <a href="{{url_for('delete_youtube', blog_id = blog_id, update = 0)}}"><button type="button" class="shadow_button">Delete Video</button></a>
+
+            </div>
+
+        {% else %}
+
+            <div class = "youtube_container">
+                
+                <iframe width="854" height="480" src = "{{ youtube }}" allowFullScreen='allowFullScreen'></iframe>
+
+            </div>
+
+        {% endif %}
+
+    {% else %}
+
+            <div class = "youtube_container">
+                
+                <iframe width="854" height="480" src = "{{ youtube }}" allowFullScreen='allowFullScreen'></iframe>
+
+            </div>
+
+    {% endif %} 
+
+{% endif %}
+
 
 <!-- Comments Container -->
 <div>
