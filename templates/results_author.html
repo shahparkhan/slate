@@ -8,10 +8,18 @@
     <br><br>
 
     <ol>
+		
+		{% if 'Content Moderator' == session['login_as'] %}
+		{% for item in authors %}
+			<a href= "{{url_for('author', auth_id = item[1])}}"><li>{{ item[0] }}</li></a>
+			<a href="{{url_for('delete_auth', auth_id = item[1] )}}">Delete Author: {{ item[0] }}</a>
+		{% endfor %}
+
+		{% else %}
 		{% for item in authors %}
 		    <a href= "{{url_for('author', auth_id = item[1])}}"><li>{{ item[0] }}</li></a>
 		{% endfor %}
+		{% endif %}
 	</ol>
 
 {% endblock %}
-

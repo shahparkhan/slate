@@ -18,6 +18,9 @@
             <th class = "th_td_content">Flag</th>
             <th class = "th_td_content">Views</th>
             <th class = "th_td_content">Applauds</th>
+            {% if 'Content Moderator' == session['login_as'] %}
+            <th class = "th_td_content">Reports</th>
+            {% endif %}
         </tr>
         <tr>
             <td class = "th_td_content">{{ time_published }}</td>
@@ -26,6 +29,10 @@
             <td class = "th_td_content">{{ flag }}</td>
             <td class = "th_td_content">{{ views }}</td>
             <td class = "th_td_content">{{ applauds }}</td>
+            {% if 'Content Moderator' == session['login_as'] %}
+            <th class = "th_td_content">{{ reports }}</th>
+            {% endif %}
+
     </table>
 
 </div>
@@ -50,14 +57,33 @@
       {{ content }}
 </div>
 
-    
 <br>
+{% if 'Content Moderator' == session['login_as'] %}
+<div>
+    <a href="{{url_for('delete_blog', blog_id = blog_id)}}"><button type="button" class="shadow_button">Delete Blog</button></a>
+</div>
+<br>
+{% if form3 %}
+<form action="{{url_for('blog_display', blog_id = blog_id, update = 0)}}"  enctype= "multipart/form-data" method="POST" style="padding:0px;">
+<div>
+    
+    {{ form3.flag.label }}
+    {{ form3.flag }}
+    {{ form3.csrf_token }}
+    {{ form3.submit }}
+      
+</div>
+</form>
+{% endif %}
+{% endif %}
+
+
 
 {% if '-' == youtube %}
     
     {% if 'user' in session %}
         
-        {% if auth_id == session['user_id'] %}
+        {% if auth_id == session['user_id'] and 'Author' == session['login_as'] %}
         
             <form action="{{url_for('blog_display', blog_id = blog_id, update = 0)}}" enctype= "multipart/form-data" method="POST" style="padding:5px;">
                 
@@ -80,7 +106,7 @@
 
     {% if 'user' in session %}
 
-        {% if auth_id == session['user_id'] %}
+        {% if auth_id == session['user_id'] and 'Author' == session['login_as'] %}
             
             <div class = "youtube_container">
                 
@@ -91,6 +117,7 @@
             </div>
 
         {% else %}
+        
 
             <div class = "youtube_container">
                 
@@ -115,7 +142,7 @@
 
 <!-- Comments Container -->
 <div>
-    {% if 'user' in session %}
+    {% if 'user' in session and 'Author' == session['login_as'] %}
         <form action="{{url_for('blog_display', blog_id = blog_id, update = 0)}}" enctype= "multipart/form-data" method="POST" style="padding:5px;">
             
             <div class = "comment_field">

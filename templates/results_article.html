@@ -15,9 +15,16 @@
 
 
 	    <ol>
-			{% for article in item[1] %}
-			    <a href= "{{url_for('blog_display', blog_id = article[1], update = 1 )}}"><li>{{ article[0] }}</li></a>
-			{% endfor %}
+			{% if 'Content Moderator' == session['login_as'] %}
+				{% for article in item[1] %}
+					<a href= "{{url_for('blog_display', blog_id = article[1], update = 1 )}}"><li>{{ article[0] }}</li></a>
+					<a href="{{url_for('delete_blog', blog_id = article[1] )}}">Delete Blog</a>
+				{% endfor %}
+			{% else %}
+				{% for article in item[1] %}
+					<a href= "{{url_for('blog_display', blog_id = article[1], update = 1 )}}"><li>{{ article[0] }}</li></a>
+				{% endfor %}
+			{% endif %}
 		</ol>
 
 		<br>
@@ -25,4 +32,5 @@
 	{% endfor %}
 
 {% endblock %}
+
 

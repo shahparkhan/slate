@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request
-from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment, EditName, EditEmail, EditBio, EditPic, EditPassword, AuthorSearch, ArticleSearch, YoutubeUpload
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField, FileField, SelectField, TextField, TextAreaField, DateTimeField
+from wtforms.validators import InputRequired, Email, EqualTo
+
+from forms import SignUpForm, LoginForm, ChangePassword, CreateStory, UploadStory, Comment, EditName, EditEmail, EditBio, EditPic, EditPassword, AuthorSearch, ArticleSearch, YoutubeUpload, SelectFlag
 from flask_mysqldb import MySQL
 from flask_uploads import configure_uploads, IMAGES, UploadSet
 import uuid
@@ -16,7 +20,7 @@ app.config['SECRET_KEY']='ashirshahparadnan'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'password'
+app.config['MYSQL_PASSWORD'] = 'tigris52'
 app.config['MYSQL_DB'] = 'slate'
 # app.config['MySQL_CURSORCLASS'] = 'DictCursor'
 
@@ -27,10 +31,9 @@ app.config['UPLOADED_IMAGES_DEST'] = 'static/author_data/images'
 images = UploadSet('images', IMAGES)
 configure_uploads(app, images)
 
-# blogs = UploadSet('blogs',DOCUMENTS)
-# configure_uploads(app, blogs)
 
 db = MySQL(app)
+
 
 def update_flags():
     cursor = db.connection.cursor()
@@ -38,7 +41,7 @@ def update_flags():
     cursor.execute(select_stmt)
     themes = cursor.fetchall()
     
-    with open("themes.txt", 'w') as f:  
+    with open("flags.txt", 'w') as f:  
         for theme in themes:
             write_this = str(theme[0]) + "\t" +  str(theme[1]) + "\n"
             f.write(write_this)
@@ -163,6 +166,7 @@ def logout():
         session.pop('user_id')
         session.pop('pic')
         session.pop('bio')
+        session.pop('login_as')
 
     return redirect(url_for('homepage'))
 
@@ -217,8 +221,10 @@ def blog_display(blog_id,update):
 
     form = Comment()
     form2 = YoutubeUpload()
+    form3 = SelectFlag()
     cursor = db.connection.cursor()
     blog_id = int(blog_id)
+
 
     if form.validate_on_submit():
         time = datetime.datetime.now()
@@ -229,21 +235,31 @@ def blog_display(blog_id,update):
         db.connection.commit()
 
     if form2.validate_on_submit():
-
         link = str(form2.link.data)
         if link != "":
-            
-            
             split_link = link.split('watch?v=')
             split_left = split_link[0]
             split_right = split_link[1].split('&')
             split_right = split_right[0]
-
             final_link = split_left + 'embed/' + split_right
-
             update_stmt = "UPDATE blogs SET Youtube = %s WHERE Blog_ID = %s"
             cursor.execute(update_stmt,[final_link, blog_id])
             db.connection.commit()
+        
+
+    
+    if form3.validate_on_submit():
+        flag = form3.flag.data
+        select_stmt = "SELECT Flag_ID FROM flags WHERE Flag=%s"
+        cursor = db.connection.cursor()
+        cursor.execute(select_stmt, [flag])
+        data = cursor.fetchall()
+        flag_id  = data[0][0]
+        #"UPDATE blogs SET Youtube = %s WHERE Blog_ID = %s"
+        update_flag = "UPDATE blogs SET Flag_ID = %s WHERE Blog_ID=%s"
+        cursor = db.connection.cursor()
+        cursor.execute(update_flag,[flag_id,blog_id])
+        db.connection.commit()
 
     select_stmt = "SELECT Heading, Time_Published, Theme, Flag_ID, Auth_ID, Content, Youtube FROM blogs WHERE Blog_ID=%s"
     cursor = db.connection.cursor()
@@ -256,8 +272,6 @@ def blog_display(blog_id,update):
     auth_id = data[0][4]
     content = data[0][5]
     youtube = data[0][6]
-
-    print("youtube:", youtube)
 
     if youtube == '-':
         print("yes")            
@@ -302,12 +316,14 @@ def blog_display(blog_id,update):
         cursor.execute(update_views,[blog_id])
         db.connection.commit()
 
-    select_stmt = "SELECT Applauds,Views FROM interactions WHERE Blog_ID=%s"
+    select_stmt = "SELECT Applauds,Views,Reports FROM interactions WHERE Blog_ID=%s"
     cursor = db.connection.cursor()
     cursor.execute(select_stmt, [blog_id])
     data = cursor.fetchall()
     applauds = int(data[0][0])
     views = int(data[0][1])
+    reports = int(data[0][2])
+
 
 
     return render_template("blog.html", 
@@ -319,12 +335,14 @@ def blog_display(blog_id,update):
                         content = content,
                         form = form,
                         form2 = form2,
+                        form3=form3,
                         comments = comments,
                         blog_id = blog_id,
                         views = views,
                         applauds = applauds,
                         auth_id = str(auth_id), 
-                        youtube = youtube)
+                        youtube = youtube,
+                        reports = reports)
 
 
 
@@ -422,10 +440,18 @@ def display_following(auth_id):
 
 @app.route("/cm/<cm_id>")
 def cm(cm_id):
-    name1 = session['user']
-    pic_path = session['pic']
-    bio1 = session['bio']
-    return render_template("cm.html",name=name1,pic=pic_path,bio=bio1) #send content moderator object here)
+    select_stmt = "SELECT Name, Picture, Biography FROM `content moderator` WHERE CM_ID=%s"
+    cm_id = int(cm_id)
+    cursor = db.connection.cursor()
+    cursor.execute(select_stmt, [cm_id])
+    data = cursor.fetchall()
+
+    name = data[0][0]
+    pic_path = data[0][1]
+    bio = data[0][2]
+
+
+    return render_template("cm.html",name=name,pic=pic_path,bio=bio) #send content moderator object here)
 
 @app.route("/upload_blog/<auth_id>", methods=['POST', 'GET'])
 def upload_blog(auth_id):
@@ -553,7 +579,6 @@ def applaud(blog_id):
 def delete_blog(blog_id):
     cursor = db.connection.cursor()
     try:
-        pic_path = session['pic']
         select_stmt = "SELECT Auth_ID FROM blogs WHERE Blog_ID=%s"
         delete_stmt = "DELETE FROM blogs WHERE Blog_ID = %s"
         cursor.execute(select_stmt, [blog_id])
@@ -571,8 +596,10 @@ def delete_blog(blog_id):
         for i in data:
             temp = [i[0], i[1]]
             headings.append(temp)
-
-        return redirect(url_for('author',auth_id= auth_id))
+        if (session['login_as']=="Content Moderator"):
+            return redirect(url_for('homepage'))
+        else:
+            return redirect(url_for('author',auth_id= auth_id))
     except:
         return "Failed!"
 
@@ -711,12 +738,11 @@ def search_author():
     if form.validate_on_submit():
         name = form.name.data
         email = form.email.data
-
         if ( (name == "") and (email == "") ):
             message = 'Please enter text in the fields and then hit search'
             return render_template("search_author.html", form = form, message = message)
 
-        elif ( name == ""):
+        elif ( name == ""): #search by email
             if ( (email_check(email) == False) ):
                 message = 'Either enter a valid email address, or leave the field empty'
                 return render_template("search_author.html", form = form, message = message)
@@ -738,7 +764,7 @@ def search_author():
 
                 return render_template("results_author.html", authors = authors)            
 
-        elif (email == ""):
+        elif (email == ""): #search name
             search_stmt = "SELECT Name, Auth_ID FROM author WHERE Name LIKE %s"
             like_stmt = '%' + name + '%'
             cursor.execute(search_stmt,[like_stmt])
@@ -1109,9 +1135,31 @@ def trending(trend):
 
         return render_template("trending.html", items = items, message = message, trend = trend)
 
+    elif trend == "reports":
+        select_stmt = "SELECT Heading, Blog_ID, Reports FROM blogs NATURAL JOIN interactions ORDER BY Reports DESC LIMIT 10"
+        cursor.execute(select_stmt)
+        data = cursor.fetchall()
+
+        items = []
+
+        for i in data:
+            temp = [i[0], i[1], i[2]]
+            items.append(temp)
+
+        message = "Most Reported"
+        trend = "Reports"
+
+        return render_template("trending.html", items = items, message = message, trend = trend)
+
     else:
 
         return render_template("home.html")
+
+
+@app.route("/set_flag/<blog_id>/<flag_id>", methods=["POST","GET"])
+def set_flag(blog_id,flag_id):
+    pass
+
 
 
 if __name__ == "__main__":
