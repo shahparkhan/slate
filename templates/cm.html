@@ -14,8 +14,11 @@ Author
 <div>
     <h1>Biography</h1>
     <br>
-    <h3> {{ session['bio'] }} </h3>
-    
+    <h3> {{ bio }} </h3>
+</div>
+<br>
+<div>
+    <a href="{{url_for('trending', trend = 'reports')}}"><button type="button" class="signup_button">View Most Reported Blogs</button></a>
 </div>
 
     

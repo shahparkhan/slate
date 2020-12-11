@@ -3,6 +3,26 @@ from wtforms import StringField, PasswordField, SubmitField, FileField, SelectFi
 from wtforms.validators import InputRequired, Email, EqualTo
 import datetime 
 import email_validator
+import csv
+from wtforms.fields.core import Label
+from flask_mysqldb import MySQL
+from flask import Flask
+
+bro = Flask(__name__)
+
+bro.config['SECRET_KEY']='ashirshahparadnan'
+
+bro.config['MYSQL_HOST'] = 'localhost'
+bro.config['MYSQL_PORT'] = 3306
+bro.config['MYSQL_USER'] = 'root'
+bro.config['MYSQL_PASSWORD'] = 'tigris52'
+bro.config['MYSQL_DB'] = 'slate'
+
+
+db = MySQL(bro)
+
+
+
 
 class SignUpForm(FlaskForm):
     full_name = StringField('Full Name', validators = [InputRequired()])
@@ -90,3 +110,11 @@ class ArticleSearch(FlaskForm):
 class YoutubeUpload(FlaskForm):
     link = StringField(label = 'Link')
     submit = SubmitField(label = 'Upload')
+
+class SelectFlag(FlaskForm):
+    flags=[]
+    with open("flags.txt") as tsv:
+        for line in csv.reader(tsv, dialect="excel-tab"):
+            flags.append(line[1])
+    flag = SelectField(label="Flags:",choices=tuple(flags),validators=[InputRequired()])
+    submit = SubmitField('Set Flag')
